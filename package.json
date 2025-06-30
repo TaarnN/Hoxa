@@ -1,6 +1,6 @@
 {
   "name": "hoxa",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "100+ Curated React Hooks to Simplify Your Codebase",
   "type": "module",
   "main": "dist/index.js",
