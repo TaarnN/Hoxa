@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 type AsyncFunction<T> = () => Promise<T>;
 type AsyncState<T> = {
@@ -7,6 +7,7 @@ type AsyncState<T> = {
   value: T | null;
   retryCount: number;
   retry: () => void;
+  cancel: () => void;
 };
 
 export function useAsyncRetry<T>(
@@ -14,15 +15,21 @@ export function useAsyncRetry<T>(
   options: { retryDelay?: number; maxRetries?: number } = {}
 ): AsyncState<T> {
   const { retryDelay = 1000, maxRetries = 3 } = options;
-  const [state, setState] = useState<Omit<AsyncState<T>, "retry">>({
+  const [state, setState] = useState<Omit<AsyncState<T>, "retry" | "cancel">>({
     loading: true,
     error: null,
     value: null,
     retryCount: 0,
   });
   const [trigger, setTrigger] = useState(0);
+  const cancelRef = useRef(false);
+
+  const cancel = useCallback(() => {
+    cancelRef.current = true;
+  }, []);
 
   const retry = useCallback(() => {
+    cancelRef.current = false;
     setState((prev) => ({ ...prev, retryCount: prev.retryCount + 1 }));
     setTrigger((prev) => prev + 1);
   }, []);
@@ -35,7 +42,7 @@ export function useAsyncRetry<T>(
       try {
         setState((prev) => ({ ...prev, loading: true, error: null }));
         const result = await asyncFunction();
-        if (isMounted) {
+        if (isMounted && !cancelRef.current) {
           setState({
             loading: false,
             error: null,
@@ -44,7 +51,7 @@ export function useAsyncRetry<T>(
           });
         }
       } catch (error) {
-        if (isMounted) {
+        if (isMounted && !cancelRef.current) {
           if (state.retryCount < maxRetries) {
             timeoutId = setTimeout(retry, retryDelay);
           }
@@ -62,9 +69,10 @@ export function useAsyncRetry<T>(
 
     return () => {
       isMounted = false;
+      cancelRef.current = true;
       clearTimeout(timeoutId);
     };
   }, [trigger, asyncFunction, retryDelay, maxRetries, state.retryCount, retry]);
 
-  return { ...state, retry };
+  return { ...state, retry, cancel };
 }

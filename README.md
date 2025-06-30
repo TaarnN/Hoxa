@@ -4,10 +4,12 @@ Remember? You needed these hooks yesterday
 
 [![NPM version](https://img.shields.io/npm/v/hoxa.svg)](https://www.npmjs.com/package/hoxa)
 [![NPM downloads](https://img.shields.io/npm/dw/hoxa.svg)](https://www.npmjs.com/package/hoxa)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://www.npmjs.com/package/hoxa?activeTab=code)
 
 > Over **100+ fully-typed React Hooks** that save your time, reduce boilerplate, and just work.  
 > Perfect for any React/Next.js project.
+
+⭐️ Star us on GitHub → https://github.com/TaarnN/Hoxa
 
 ---
 
@@ -16,6 +18,18 @@ Remember? You needed these hooks yesterday
 - 🧠 **100+ hooks**: utility, DOM, event, state, media, form, storage, etc.
 - 🔧 Built with developer experience in mind
 - 💡 Useful defaults, real-world use cases
+
+---
+
+## 📦 Installation
+
+```bash
+npm install hoxa
+# or
+yarn add hoxa
+# or
+bun add hoxa
+```
 
 ---
 
@@ -284,7 +298,7 @@ Retries async functions automatically
 
 **Outputs:**
 
-- `{ loading: boolean; error: Error | null; value: T | null; retryCount: number; retry: () => void }`
+- `{ loading: boolean; error: Error | null; value: T | null; retryCount: number; retry: () => void; cancel: () => void }`
 
 ### `usePromiseQueue`
 
@@ -490,10 +504,11 @@ Manages form input validation
 
 - `effect: React.EffectCallback`
 - `dependencies: any[]`
+- `shallowFallback?: boolean` (optional fallback to shallow comparison)
 
 **Outputs:**
 
-- None
+- None (side-effect only)
 
 ### `useThrottle`
 
@@ -1326,6 +1341,7 @@ Creates falling emoji animations
 
 Predicts user's next action based on patterns  
 **Inputs:**
+
 - `windowEventTarget?: Window` (default: window)
 
 **Outputs:**
@@ -1588,18 +1604,6 @@ Makes buttons dodge the mouse
 - `options?`: `{ distance?: number }`
 
 **Outputs:** None
-
----
-
-## 📦 Installation
-
-```bash
-npm install hoxa
-# or
-yarn add hoxa
-# or
-bun add hoxa
-```
 
 ---
 
