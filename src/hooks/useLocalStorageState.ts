@@ -1,3 +1,4 @@
+// Fixed code
 import { useState, useEffect } from "react";
 
 export function useLocalStorageState<T>(
@@ -13,16 +14,29 @@ export function useLocalStorageState<T>(
   const [state, setState] = useState<T>(() => {
     try {
       const storedValue = localStorage.getItem(key);
-      if (storedValue !== null) {
-        return deserialize(storedValue);
-      }
-      return initialValue instanceof Function ? initialValue() : initialValue;
+      return storedValue !== null
+        ? deserialize(storedValue)
+        : initialValue instanceof Function
+        ? initialValue()
+        : initialValue;
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue instanceof Function ? initialValue() : initialValue;
     }
   });
 
+  // Handle key changes
+  useEffect(() => {
+    try {
+      const storedValue = localStorage.getItem(key);
+      if (storedValue !== null) {
+        setState(deserialize(storedValue));
+      }
+    } catch (error) {
+      console.error(`Error reading localStorage key "${key}":`, error);
+    }
+  }, [key, deserialize]);
+
+  // Sync storage
   useEffect(() => {
     try {
       const serializedValue = serialize(state);
