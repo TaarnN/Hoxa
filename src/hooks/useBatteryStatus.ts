@@ -11,6 +11,7 @@ export function useBatteryStatus(): BatteryState | null {
   const [battery, setBattery] = useState<BatteryState | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     // @ts-ignore: Navigator has battery in some browsers
     if (!navigator.getBattery && !navigator.battery) {
       console.warn("Battery Status API not supported");
@@ -23,6 +24,7 @@ export function useBatteryStatus(): BatteryState | null {
         const battery = await (navigator.getBattery?.() || navigator.battery);
 
         const updateBattery = () => {
+          if (!isMounted) return;
           setBattery({
             level: battery.level,
             charging: battery.charging,
@@ -50,6 +52,10 @@ export function useBatteryStatus(): BatteryState | null {
     };
 
     getBattery();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return battery;

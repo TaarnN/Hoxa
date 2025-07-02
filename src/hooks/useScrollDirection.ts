@@ -4,7 +4,7 @@ export function useScrollDirection(
   threshold: number = 10
 ): "up" | "down" | null {
   const [direction, setDirection] = useState<"up" | "down" | null>(null);
-  const lastScrollY = useRef(0);
+  const lastScrollY = useRef(typeof window !== "undefined" ? window.scrollY : 0);
 
   useEffect(() => {
     const handleScroll = () => {

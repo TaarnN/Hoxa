@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export function useViewportHeight() {
+export function useViewportSize() {
   const [height, setHeight] = useState(window.innerHeight);
   const [width, setWidth] = useState(window.innerWidth);
 

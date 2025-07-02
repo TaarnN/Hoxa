@@ -52,14 +52,16 @@ export function useAsyncRetry<T>(
         }
       } catch (error) {
         if (isMounted && !cancelRef.current) {
-          if (state.retryCount < maxRetries) {
-            timeoutId = setTimeout(retry, retryDelay);
-          }
-          setState({
-            loading: false,
-            error: error as Error,
-            value: null,
-            retryCount: state.retryCount,
+          setState((prev) => {
+            if (prev.retryCount < maxRetries) {
+              timeoutId = setTimeout(retry, retryDelay);
+            }
+            return {
+              loading: false,
+              error: error as Error,
+              value: null,
+              retryCount: prev.retryCount,
+            };
           });
         }
       }
@@ -72,7 +74,7 @@ export function useAsyncRetry<T>(
       cancelRef.current = true;
       clearTimeout(timeoutId);
     };
-  }, [trigger, asyncFunction, retryDelay, maxRetries, state.retryCount, retry]);
+  }, [trigger, asyncFunction, retryDelay, maxRetries, retry]);
 
   return { ...state, retry, cancel };
 }

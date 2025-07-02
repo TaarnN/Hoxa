@@ -4,6 +4,8 @@ export function useScrollbarWidth(): number {
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
+
     const outer = document.createElement("div");
     outer.style.visibility = "hidden";
     outer.style.overflow = "scroll";

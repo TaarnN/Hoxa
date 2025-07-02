@@ -1,5 +1,4 @@
-// Fixed code
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function useLocalStorageState<T>(
   key: string,
@@ -10,6 +9,7 @@ export function useLocalStorageState<T>(
   } = {}
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const { serialize = JSON.stringify, deserialize = JSON.parse } = options;
+  const prevKeyRef = useRef(key);
 
   const [state, setState] = useState<T>(() => {
     try {
@@ -24,20 +24,27 @@ export function useLocalStorageState<T>(
     }
   });
 
-  // Handle key changes
   useEffect(() => {
-    try {
-      const storedValue = localStorage.getItem(key);
-      if (storedValue !== null) {
-        setState(deserialize(storedValue));
+    if (prevKeyRef.current !== key) {
+      try {
+        const storedValue = localStorage.getItem(key);
+        if (storedValue !== null) {
+          setState(deserialize(storedValue));
+        } else {
+          setState(
+            initialValue instanceof Function ? initialValue() : initialValue
+          );
+        }
+      } catch (error) {
+        console.error(`Error reading localStorage key "${key}":`, error);
       }
-    } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+      prevKeyRef.current = key;
     }
-  }, [key, deserialize]);
+  }, [key, deserialize, initialValue]);
 
-  // Sync storage
   useEffect(() => {
+    if (prevKeyRef.current !== key) return;
+
     try {
       const serializedValue = serialize(state);
       localStorage.setItem(key, serializedValue);

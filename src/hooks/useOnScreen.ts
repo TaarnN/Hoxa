@@ -6,9 +6,10 @@ export function useOnScreen<T extends HTMLElement>(
 ): [RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+    observerRef.current = new IntersectionObserver(([entry]) => {
       if (entry) {
         setIsVisible(entry.isIntersecting);
       }
@@ -17,12 +18,15 @@ export function useOnScreen<T extends HTMLElement>(
     const currentElement = ref.current;
 
     if (currentElement) {
-      observer.observe(currentElement);
+      observerRef.current.observe(currentElement);
     }
 
     return () => {
-      if (currentElement) {
-        observer.unobserve(currentElement);
+      if (observerRef.current) {
+        if (currentElement) {
+          observerRef.current.unobserve(currentElement);
+        }
+        observerRef.current.disconnect();
       }
     };
   }, [options]);

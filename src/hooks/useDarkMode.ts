@@ -8,21 +8,24 @@ export function useDarkMode(
 ): [boolean, (dark: boolean) => void] {
   const { localStorageKey = "darkMode", defaultDark = false } = options;
 
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    try {
-      const storedValue = localStorage.getItem(localStorageKey);
-      if (storedValue !== null) {
-        return JSON.parse(storedValue);
-      }
-      return (
-        window.matchMedia("(prefers-color-scheme: dark)").matches || defaultDark
-      );
-    } catch {
-      return defaultDark;
-    }
-  });
+  const [isDark, setIsDark] = useState<boolean>(defaultDark);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const storedValue = localStorage.getItem(localStorageKey);
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    const initialValue = storedValue !== null 
+      ? JSON.parse(storedValue) 
+      : prefersDark || defaultDark;
+    
+    setIsDark(initialValue);
+  }, [localStorageKey, defaultDark]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     localStorage.setItem(localStorageKey, JSON.stringify(isDark));
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark, localStorageKey]);

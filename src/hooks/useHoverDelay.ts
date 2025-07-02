@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 export function useHoverDelay(
   delay: number = 300
-): [boolean, { onMouseEnter: () => void; onMouseLeave: () => void }] {
+): [boolean, { onPointerEnter: () => void; onPointerLeave: () => void }] {
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -13,17 +13,19 @@ export function useHoverDelay(
     }
   };
 
-  const onMouseEnter = () => {
+  const onPointerEnter = () => {
     clearTimer();
     timeoutRef.current = setTimeout(() => setIsHovered(true), delay);
   };
 
-  const onMouseLeave = () => {
+  const onPointerLeave = () => {
     clearTimer();
     setIsHovered(false);
   };
 
-  useEffect(() => clearTimer, []);
+  useEffect(() => {
+    return () => clearTimer();
+  }, []);
 
-  return [isHovered, { onMouseEnter, onMouseLeave }];
+  return [isHovered, { onPointerEnter, onPointerLeave }];
 }

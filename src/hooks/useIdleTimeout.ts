@@ -1,21 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 export function useIdleTimeout(callback: () => void, timeout: number = 60000) {
-  const timerRef = useRef<NodeJS.Timeout>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
-
-  const resetTimer = () => {
-    lastActivityRef.current = Date.now();
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (Date.now() - lastActivityRef.current >= timeout) {
-        callback();
-      }
-    }, timeout);
-  };
+  const callbackRef = useRef(callback);
 
   useEffect(() => {
-    const events = ["mousemove", "keydown", "scroll", "touchstart"];
+    callbackRef.current = callback;
+  }, [callback]);
+
+  const resetTimer = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    if (timerRef.current) clearTimeout(timerRef.current);
+    
+    timerRef.current = setTimeout(() => {
+      if (Date.now() - lastActivityRef.current >= timeout) {
+        callbackRef.current();
+      }
+    }, timeout);
+  }, [timeout]);
+
+  useEffect(() => {
+    const events = ["mousemove", "keydown", "scroll", "touchstart", "mousedown"];
 
     events.forEach((event) => {
       window.addEventListener(event, resetTimer);
@@ -29,5 +35,5 @@ export function useIdleTimeout(callback: () => void, timeout: number = 60000) {
       });
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [callback, timeout]);
+  }, [resetTimer]);
 }

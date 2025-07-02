@@ -8,14 +8,12 @@ export function useStack<T>(initialItems: T[] = []) {
   }, []);
 
   const pop = useCallback((): T | undefined => {
-    let removed;
     setStack((prev) => {
-      const newStack = [...prev];
-      removed = newStack.pop();
-      return newStack;
+      if (prev.length === 0) return prev;
+      return prev.slice(0, -1);
     });
-    return removed;
-  }, []);
+    return stack[stack.length - 1];
+  }, [stack]);
 
   const peek = useCallback(
     (): T | undefined => stack[stack.length - 1],

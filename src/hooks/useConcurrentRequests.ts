@@ -34,17 +34,28 @@ export function useConcurrentRequests<T>(
       while (queue.length > 0) {
         const index = requests.length - queue.length;
         const request = queue.shift()!;
+        let result: T | null = null;
+        let error: Error | null = null;
 
         try {
-          const result = await request();
-          results[index] = result;
+          result = await request();
         } catch (err) {
-          errors[index] = err as Error;
+          error = err as Error;
         } finally {
           completed++;
-          setProgress(completed / requests.length);
-          setResults([...results]);
-          setErrors([...errors]);
+          if (completed % 5 === 0 || queue.length === 0) {
+            setResults(prev => {
+              const next = [...prev];
+              next[index] = result;
+              return next;
+            });
+            setErrors(prev => {
+              const next = [...prev];
+              next[index] = error;
+              return next;
+            });
+            setProgress(completed / requests.length);
+          }
         }
       }
     };

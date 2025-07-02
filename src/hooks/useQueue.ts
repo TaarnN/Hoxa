@@ -8,14 +8,12 @@ export function useQueue<T>(initialItems: T[] = []) {
   }, []);
 
   const dequeue = useCallback((): T | undefined => {
-    let removed;
     setQueue((prev) => {
-      const [first, ...rest] = prev;
-      removed = first;
-      return rest;
+      if (prev.length === 0) return prev;
+      return prev.slice(1);
     });
-    return removed;
-  }, []);
+    return queue[0];
+  }, [queue]);
 
   const peek = useCallback((): T | undefined => queue[0], [queue]);
 

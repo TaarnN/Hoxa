@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export function useWebSocket<T = any>(
   url: string,
@@ -9,52 +9,36 @@ export function useWebSocket<T = any>(
     reconnect?: boolean;
     reconnectInterval?: number;
   } = {}
-): {
-  data: T | null;
-  send: (data: any) => void;
-  readyState: number;
-  lastMessage: MessageEvent | null;
-  connect: () => void;
-  disconnect: () => void;
-} {
+) {
   const [data, setData] = useState<T | null>(null);
   const [lastMessage, setLastMessage] = useState<MessageEvent | null>(null);
-  const [readyState, setReadyState] = useState(WebSocket.CONNECTING);
+  const [readyState, setReadyState] = useState<number>(WebSocket.CONNECTING);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimerRef = useRef<number | null>(null);
 
   const connect = useCallback(() => {
     if (wsRef.current) return;
-
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
-    ws.onopen = (event) => {
-      setReadyState(WebSocket.OPEN as 0);
-      options.onOpen?.(event);
+    ws.onopen = (e) => {
+      setReadyState(WebSocket.OPEN);
+      options.onOpen?.(e);
     };
-
-    ws.onmessage = (event) => {
+    ws.onmessage = (e) => {
       try {
-        const jsonData = JSON.parse(event.data);
-        setData(jsonData);
+        setData(JSON.parse(e.data));
       } catch {
-        // Not JSON, use raw data
-        setData(event.data as unknown as T);
+        setData(e.data as unknown as T);
       }
-      setLastMessage(event);
+      setLastMessage(e);
     };
-
-    ws.onerror = (event) => {
-      options.onError?.(event);
-    };
-
-    ws.onclose = (event) => {
-      setReadyState(WebSocket.CLOSED as 0);
-      options.onClose?.(event);
-
+    ws.onerror = options.onError || null;
+    ws.onclose = (e) => {
+      setReadyState(WebSocket.CLOSED);
+      options.onClose?.(e);
       if (options.reconnect) {
-        reconnectTimerRef.current = setTimeout(
+        reconnectTimerRef.current = window.setTimeout(
           connect,
           options.reconnectInterval || 3000
         );
@@ -63,22 +47,21 @@ export function useWebSocket<T = any>(
   }, [url, options]);
 
   const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (reconnectTimerRef.current) {
+    if (wsRef.current) wsRef.current.close();
+    wsRef.current = null;
+    if (reconnectTimerRef.current !== null) {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
     }
-    setReadyState(WebSocket.CLOSED as 0);
+    setReadyState(WebSocket.CLOSED);
   }, []);
 
   const send = useCallback(
-    (data: any) => {
-      if (wsRef.current && readyState === WebSocket.OPEN as 0) {
-        const message = typeof data === "string" ? data : JSON.stringify(data);
-        wsRef.current.send(message);
+    (payload: any) => {
+      if (wsRef.current && readyState === WebSocket.OPEN) {
+        const msg =
+          typeof payload === "string" ? payload : JSON.stringify(payload);
+        wsRef.current.send(msg);
       }
     },
     [readyState]

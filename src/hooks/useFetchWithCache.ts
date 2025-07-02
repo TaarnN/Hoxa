@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import axios, { type AxiosRequestConfig } from "axios";
 
 type Cache = {
   [key: string]: {
@@ -12,7 +13,7 @@ const memoryCache: Cache = {};
 
 export function useFetchWithCache<T>(
   url: string,
-  options?: RequestInit,
+  options?: AxiosRequestConfig,
   cacheKey?: string
 ): {
   data: T | null;
@@ -25,15 +26,26 @@ export function useFetchWithCache<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const isMountedRef = useRef(true);
 
   const refresh = useCallback(() => {
     setRefreshToken((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
+    const signal = controller.signal;
 
     const fetchData = async () => {
+      if (!isMountedRef.current) return;
+
       setLoading(true);
       setError(null);
 
@@ -41,21 +53,18 @@ export function useFetchWithCache<T>(
         // Check cache
         const cached = memoryCache[cacheId];
         if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
-          setData(cached.data);
+          if (isMountedRef.current) setData(cached.data);
           setLoading(false);
           return;
         }
 
         // Fetch fresh data
-        const response = await fetch(url, {
+        const response = await axios.get<T>(url, {
           ...options,
-          signal: controller.signal,
+          signal,
         });
 
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
-
-        const responseData = await response.json();
+        const responseData = response.data;
 
         // Update cache
         memoryCache[cacheId] = {
@@ -63,13 +72,13 @@ export function useFetchWithCache<T>(
           timestamp: Date.now(),
         };
 
-        setData(responseData);
+        if (isMountedRef.current) setData(responseData);
       } catch (err) {
-        if (!controller.signal.aborted) {
+        if (isMountedRef.current && !axios.isCancel(err)) {
           setError(err as Error);
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (isMountedRef.current) {
           setLoading(false);
         }
       }

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 
 export function useTimeoutFn() {
-  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const timeoutId = useRef<number | null>(null);
 
   const clear = useCallback(() => {
-    if (timeoutId.current) {
+    if (timeoutId.current !== null) {
       clearTimeout(timeoutId.current);
       timeoutId.current = null;
     }
@@ -13,7 +13,7 @@ export function useTimeoutFn() {
   const set = useCallback(
     (fn: () => void, delay: number) => {
       clear();
-      timeoutId.current = setTimeout(fn, delay);
+      timeoutId.current = window.setTimeout(fn, delay);
     },
     [clear]
   );
@@ -26,9 +26,7 @@ export function useTimeoutFn() {
     [clear, set]
   );
 
-  useEffect(() => {
-    return clear;
-  }, [clear]);
+  useEffect(() => () => clear(), [clear]);
 
   return { set, clear, reset };
 }

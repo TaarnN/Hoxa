@@ -15,6 +15,7 @@ export function useScriptLoader(
   useEffect(() => {
     if (!src) return;
 
+    let isMounted = true;
     const script = document.createElement("script");
     script.src = src;
     script.async = options.async ?? true;
@@ -24,8 +25,8 @@ export function useScriptLoader(
       script.setAttribute(key, value);
     });
 
-    const handleLoad = () => setStatus("ready");
-    const handleError = () => setStatus("error");
+    const handleLoad = () => isMounted && setStatus("ready");
+    const handleError = () => isMounted && setStatus("error");
 
     script.addEventListener("load", handleLoad);
     script.addEventListener("error", handleError);
@@ -33,6 +34,7 @@ export function useScriptLoader(
     document.head.appendChild(script);
 
     return () => {
+      isMounted = false;
       script.removeEventListener("load", handleLoad);
       script.removeEventListener("error", handleError);
       document.head.removeChild(script);

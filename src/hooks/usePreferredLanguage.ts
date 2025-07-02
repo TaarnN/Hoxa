@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 
 export function usePreferredLanguage(): string {
-  const [language, setLanguage] = useState(
-    navigator.language || (navigator as any).userLanguage || ""
-  );
+  const [language, setLanguage] = useState("");
 
   useEffect(() => {
+    if (typeof navigator === "undefined") return;
+
+    const getLanguage = () => 
+      navigator.language || (navigator as any).userLanguage || "";
+
+    setLanguage(getLanguage());
+
     const handleLanguageChange = () => {
-      setLanguage(navigator.language || (navigator as any).userLanguage || "");
+      setLanguage(getLanguage());
     };
 
     window.addEventListener("languagechange", handleLanguageChange);

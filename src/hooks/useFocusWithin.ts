@@ -11,24 +11,21 @@ export function useFocusWithin<T extends HTMLElement>(): [
     const node = ref.current;
     if (!node) return;
 
-    const handleFocusIn = (e: FocusEvent) => {
+    const handleFocus = (e: FocusEvent) => {
       if (node.contains(e.target as Node)) {
         setIsFocusWithin(true);
-      }
-    };
-
-    const handleFocusOut = (e: FocusEvent) => {
-      if (!node.contains(e.relatedTarget as Node)) {
+      } else {
         setIsFocusWithin(false);
       }
     };
 
-    document.addEventListener("focusin", handleFocusIn);
-    document.addEventListener("focusout", handleFocusOut);
+    // Use event capture to handle events in iframes
+    document.addEventListener("focus", handleFocus, true);
+    document.addEventListener("blur", handleFocus, true);
 
     return () => {
-      document.removeEventListener("focusin", handleFocusIn);
-      document.removeEventListener("focusout", handleFocusOut);
+      document.removeEventListener("focus", handleFocus, true);
+      document.removeEventListener("blur", handleFocus, true);
     };
   }, []);
 

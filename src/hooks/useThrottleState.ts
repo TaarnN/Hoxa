@@ -7,28 +7,32 @@ export function useThrottleState<T>(
   const [value, setValue] = useState<T>(initialValue);
   const lastUpdateRef = useRef<number>(0);
   const pendingRef = useRef<T | null>(null);
+  const isScheduledRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (isScheduledRef.current) return;
     const now = Date.now();
-    if (
-      now - lastUpdateRef.current >= interval &&
-      pendingRef.current !== null
-    ) {
+    const elapsed = now - lastUpdateRef.current;
+
+    if (elapsed >= interval && pendingRef.current !== null) {
       setValue(pendingRef.current);
       pendingRef.current = null;
       lastUpdateRef.current = now;
-    } else {
+    } else if (pendingRef.current !== null) {
+      isScheduledRef.current = true;
       const timeout = setTimeout(() => {
-        if (pendingRef.current !== null) {
-          setValue(pendingRef.current);
-          pendingRef.current = null;
-          lastUpdateRef.current = Date.now();
-        }
-      }, interval - (now - lastUpdateRef.current));
+        setValue(pendingRef.current!);
+        pendingRef.current = null;
+        lastUpdateRef.current = Date.now();
+        isScheduledRef.current = false;
+      }, interval - elapsed);
 
-      return () => clearTimeout(timeout);
+      return () => {
+        clearTimeout(timeout);
+        isScheduledRef.current = false;
+      };
     }
-  }, [value, interval]);
+  }, [interval, value]);
 
   const throttledSet = useCallback(
     (newValue: React.SetStateAction<T>) => {
@@ -36,7 +40,6 @@ export function useThrottleState<T>(
         typeof newValue === "function"
           ? (newValue as (prev: T) => T)(value)
           : newValue;
-
       pendingRef.current = resolvedValue;
     },
     [value]

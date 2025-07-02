@@ -1,20 +1,15 @@
 import { useEffect, useRef } from "react";
-import isEqual from "lodash";
+import isEqual from "lodash/isEqual";
 
 export function useDeepCompareEffect(
   effect: React.EffectCallback,
-  dependencies: any[],
-  shallowFallback: boolean = false
+  dependencies: any[]
 ) {
   const currentDependenciesRef = useRef<any[]>([]);
-  const hasShallowChanged = shallowFallback && 
-    (dependencies.length !== currentDependenciesRef.current.length || 
-     dependencies.some((dep, i) => dep !== currentDependenciesRef.current[i]));
 
   if (
     !currentDependenciesRef.current ||
-    hasShallowChanged ||
-    !isEqual([currentDependenciesRef.current, dependencies])
+    !isEqual(currentDependenciesRef.current, dependencies)
   ) {
     currentDependenciesRef.current = dependencies;
   }

@@ -31,7 +31,7 @@ export function useCountdown(
 
   useEffect(() => {
     if (!isRunning) {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
 
@@ -41,12 +41,20 @@ export function useCountdown(
       return;
     }
 
-    timerRef.current = setTimeout(() => {
-      setSeconds((s) => s - 1);
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => {
+        const newValue = s - 1;
+        if (newValue <= 0) {
+          setIsRunning(false);
+          onComplete?.();
+          if (timerRef.current) clearInterval(timerRef.current);
+        }
+        return newValue;
+      });
     }, interval);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isRunning, seconds, interval, onComplete]);
 

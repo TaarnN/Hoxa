@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 
-type WindowSize = {
-  width: number;
-  height: number;
-};
+type WindowSize = { width: number; height: number };
 
 export function useWindowSizeDebounced(
   debounceDelay: number = 100
@@ -14,11 +11,11 @@ export function useWindowSizeDebounced(
   });
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
 
     const handleResize = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
+      timeoutId = window.setTimeout(() => {
         setWindowSize({
           width: window.innerWidth,
           height: window.innerHeight,

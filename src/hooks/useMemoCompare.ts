@@ -1,21 +1,17 @@
-import { useRef, useMemo } from "react";
+import { useRef, useEffect } from "react";
 
 export function useMemoCompare<T>(
   value: T,
   compare: (prev: T | undefined, current: T) => boolean
 ) {
-  const previousRef = useRef<T>(undefined);
-  const previous = previousRef.current;
+  const previousRef = useRef<T | undefined>(undefined);
+  const isEqualRef = useRef(false);
 
-  const isEqual = compare(previous, value);
+  // Update comparison whenever value changes
+  useEffect(() => {
+    isEqualRef.current = compare(previousRef.current, value);
+    previousRef.current = value;
+  }, [value, compare]);
 
-  const memoized = useMemo(() => {
-    if (!isEqual) {
-      previousRef.current = value;
-      return value;
-    }
-    return previous;
-  }, [value, isEqual, previous]);
-
-  return memoized;
+  return isEqualRef.current ? previousRef.current : value;
 }

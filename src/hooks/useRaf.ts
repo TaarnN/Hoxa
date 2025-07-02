@@ -12,11 +12,8 @@ export function useRaf(callback: (time: DOMHighResTimeStamp) => void) {
   useEffect(() => {
     if (!isRunning) return;
 
-    let lastTime = 0;
     const loop = (time: DOMHighResTimeStamp) => {
-      const delta = time - lastTime;
       callbackRef.current(time);
-      lastTime = time;
       frameRef.current = requestAnimationFrame(loop);
     };
 

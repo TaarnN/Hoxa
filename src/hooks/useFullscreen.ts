@@ -37,26 +37,30 @@ export function useFullscreen<T extends HTMLElement>(): [
 
   useEffect(() => {
     const handleChange = () => {
-      setIsFullscreen(
-        !!(
-          document.fullscreenElement ||
-          (document as any).webkitFullscreenElement ||
-          (document as any).mozFullScreenElement ||
-          (document as any).msFullscreenElement
-        )
-      );
+      const fullscreenElement = 
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement;
+      
+      setIsFullscreen(fullscreenElement === ref.current);
     };
 
-    document.addEventListener("fullscreenchange", handleChange);
-    document.addEventListener("webkitfullscreenchange", handleChange);
-    document.addEventListener("mozfullscreenchange", handleChange);
-    document.addEventListener("MSFullscreenChange", handleChange);
+    const events = [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange"
+    ];
+
+    events.forEach(event => {
+      document.addEventListener(event, handleChange);
+    });
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleChange);
-      document.removeEventListener("webkitfullscreenchange", handleChange);
-      document.removeEventListener("mozfullscreenchange", handleChange);
-      document.removeEventListener("MSFullscreenChange", handleChange);
+      events.forEach(event => {
+        document.removeEventListener(event, handleChange);
+      });
     };
   }, []);
 

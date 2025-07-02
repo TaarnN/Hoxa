@@ -16,12 +16,16 @@ export function useDeviceOrientation(): OrientationState {
   });
 
   useEffect(() => {
+    let isMounted = true;
+    
     if (!window.DeviceOrientationEvent) {
       console.warn("Device orientation not supported");
       return;
     }
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
+      if (!isMounted) return;
+      
       setOrientation({
         alpha: e.alpha,
         beta: e.beta,
@@ -33,6 +37,7 @@ export function useDeviceOrientation(): OrientationState {
     window.addEventListener("deviceorientation", handleOrientation);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("deviceorientation", handleOrientation);
     };
   }, []);

@@ -25,5 +25,5 @@ export function useHologram(
         })
     );
     return () => anims.forEach((a) => a && a.kill());
-  }, [refs, JSON.stringify(options)]);
+  }, [refs, options.rotation, options.depth]);
 }

@@ -11,15 +11,19 @@ export function useHover<T extends HTMLElement>(): [
     const node = ref.current;
     if (!node) return;
 
-    const handleMouseEnter = () => setIsHovered(true);
-    const handleMouseLeave = () => setIsHovered(false);
+    const handleEnter = () => setIsHovered(true);
+    const handleLeave = () => setIsHovered(false);
 
-    node.addEventListener("mouseenter", handleMouseEnter);
-    node.addEventListener("mouseleave", handleMouseLeave);
+    node.addEventListener("pointerenter", handleEnter);
+    node.addEventListener("pointerleave", handleLeave);
+    node.addEventListener("mouseenter", handleEnter);
+    node.addEventListener("mouseleave", handleLeave);
 
     return () => {
-      node.removeEventListener("mouseenter", handleMouseEnter);
-      node.removeEventListener("mouseleave", handleMouseLeave);
+      node.removeEventListener("pointerenter", handleEnter);
+      node.removeEventListener("pointerleave", handleLeave);
+      node.removeEventListener("mouseenter", handleEnter);
+      node.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
 

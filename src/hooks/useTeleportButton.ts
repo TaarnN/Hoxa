@@ -21,7 +21,20 @@ export function useTeleportButton(
         ref.current.style.top = `${Math.random() * window.innerHeight}px`;
       }
     }
+
+    function resetPosition() {
+      if (ref.current) {
+        ref.current.style.position = "";
+        ref.current.style.left = "";
+        ref.current.style.top = "";
+      }
+    }
+
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("mouseleave", resetPosition);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseleave", resetPosition);
+    };
   }, [ref, options]);
 }

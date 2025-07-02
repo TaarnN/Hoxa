@@ -5,6 +5,7 @@ export function useSoundReactive() {
   const [level, setLevel] = useState(0);
   const audioCtx = useRef<AudioContext>(null);
   const analyser = useRef<AnalyserNode>(null);
+  const isMounted = useRef(true);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -20,6 +21,7 @@ export function useSoundReactive() {
         const data = new Uint8Array(analyser.current.frequencyBinCount);
 
         function update() {
+          if (!isMounted.current) return;
           analyser.current!.getByteFrequencyData(data);
           setLevel(data.reduce((a, b) => a + b, 0) / data.length);
           animationFrameId = requestAnimationFrame(update);
@@ -33,6 +35,7 @@ export function useSoundReactive() {
     init();
 
     return () => {
+      isMounted.current = false;
       cancelAnimationFrame(animationFrameId);
       audioCtx.current?.close();
     };

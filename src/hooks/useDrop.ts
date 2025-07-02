@@ -11,14 +11,12 @@ export function useDrop<T>(
     const node = dropRef.current;
     if (!node) return;
 
-    const handleDragOver = (e: DragEvent) => {
+    const handleEnter = (e: DragEvent | TouchEvent) => {
       e.preventDefault();
       setIsOver(true);
     };
 
-    const handleDragLeave = () => {
-      setIsOver(false);
-    };
+    const handleLeave = () => setIsOver(false);
 
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
@@ -37,14 +35,27 @@ export function useDrop<T>(
       setTimeout(() => setIsDropped(false), 300);
     };
 
-    node.addEventListener("dragover", handleDragOver);
-    node.addEventListener("dragleave", handleDragLeave);
+    const handleTouchDrop = (e: TouchEvent) => {
+      e.preventDefault();
+      setIsOver(false);
+      setIsDropped(true);
+      setTimeout(() => setIsDropped(false), 300);
+    };
+
+    node.addEventListener("dragover", handleEnter);
+    node.addEventListener("dragleave", handleLeave);
     node.addEventListener("drop", handleDrop);
+    node.addEventListener("touchmove", handleEnter);
+    node.addEventListener("touchend", handleTouchDrop);
+    node.addEventListener("touchcancel", handleLeave);
 
     return () => {
-      node.removeEventListener("dragover", handleDragOver);
-      node.removeEventListener("dragleave", handleDragLeave);
+      node.removeEventListener("dragover", handleEnter);
+      node.removeEventListener("dragleave", handleLeave);
       node.removeEventListener("drop", handleDrop);
+      node.removeEventListener("touchmove", handleEnter);
+      node.removeEventListener("touchend", handleTouchDrop);
+      node.removeEventListener("touchcancel", handleLeave);
     };
   }, [onDrop]);
 

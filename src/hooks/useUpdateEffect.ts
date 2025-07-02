@@ -2,16 +2,15 @@ import { useEffect, useRef } from "react";
 
 export function useUpdateEffect(
   effect: React.EffectCallback,
-  deps?: React.DependencyList
+  deps: React.DependencyList = []
 ) {
-  const isInitialMount = useRef(true);
+  const isFirst = useRef(true);
 
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    if (isFirst.current) {
+      isFirst.current = false;
+    } else {
+      return effect();
     }
-
-    return effect();
   }, deps);
 }

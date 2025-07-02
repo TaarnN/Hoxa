@@ -5,9 +5,13 @@ export function useErrorBoundary() {
 
   const resetError = useCallback(() => setError(null), []);
 
+  const throwError = useCallback((err: Error) => {
+    setError(err);
+  }, []);
+
   if (error) {
     throw error;
   }
 
-  return { setError, resetError };
+  return { throwError, resetError };
 }

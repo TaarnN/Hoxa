@@ -24,23 +24,19 @@ export function useWakeLock() {
     }
   };
 
-  const release = async () => {
+  const release = () => {
     if (wakeLockRef.current) {
-      try {
-        await wakeLockRef.current.release();
-        wakeLockRef.current = null;
-        setIsActive(false);
-      } catch (err) {
-        console.error("Failed to release wake lock:", err);
-      }
+      wakeLockRef.current.release().catch((e) => {
+        console.error("Failed to release wake lock:", e);
+      });
+      wakeLockRef.current = null;
+      setIsActive(false);
     }
   };
 
   useEffect(() => {
     return () => {
-      if (wakeLockRef.current) {
-        release();
-      }
+      release();
     };
   }, []);
 

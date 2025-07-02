@@ -15,8 +15,10 @@ export function usePromiseQueue() {
     } catch (error) {
       console.error("Task failed:", error);
     } finally {
-      setIsRunning(false);
-      processQueue();
+      setTimeout(() => {
+        setIsRunning(false);
+        processQueue();
+      }, 0);
     }
   }, [isRunning]);
 

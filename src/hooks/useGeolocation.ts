@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type GeolocationState = {
   latitude: number | null;
@@ -16,18 +16,31 @@ export function useGeolocation(options?: PositionOptions): GeolocationState {
     error: null,
     timestamp: null,
   });
+  
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setState((prev) => ({
-        ...prev,
-        error: new GeolocationPositionError(),
-      }));
+      if (isMountedRef.current) {
+        setState((prev) => ({
+          ...prev,
+          error: new GeolocationPositionError(),
+        }));
+      }
       return;
     }
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        if (!isMountedRef.current) return;
         setState({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -37,6 +50,7 @@ export function useGeolocation(options?: PositionOptions): GeolocationState {
         });
       },
       (error) => {
+        if (!isMountedRef.current) return;
         setState((prev) => ({ ...prev, error }));
       },
       options

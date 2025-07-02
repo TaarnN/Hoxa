@@ -6,7 +6,7 @@ Remember? You needed these hooks yesterday
 [![NPM downloads](https://img.shields.io/npm/dw/hoxa.svg)](https://www.npmjs.com/package/hoxa)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://www.npmjs.com/package/hoxa?activeTab=code)
 
-> Over **100+ fully-typed React Hooks** that save your time, reduce boilerplate, and just work.  
+> A comprehensive collection of **100+ production-ready React hooks** for state management, UI effects, forms, animations, and more. Carefully curated and optimized for performance and developer experience.
 > Perfect for any React/Next.js project.
 
 ⭐️ Star us on GitHub → https://github.com/TaarnN/Hoxa
@@ -135,18 +135,6 @@ Lazily updates state with async function
 
 - `[state: T, setAsync: () => Promise<void>]`
 
-### `useSSRState`
-
-Ensures consistent state between server and client  
-**Inputs:**
-
-- `initialValue: T | (() => T)`
-- `key: string`
-
-**Outputs:**
-
-- `[state: T, setState: React.Dispatch<React.SetStateAction<T>>]`
-
 ---
 
 ## UI & DOM
@@ -179,11 +167,11 @@ Detects hover state
 Hover detection with delay  
 **Inputs:**
 
-- `delay?: number`
+- `delay?: number` (default: 300ms)
 
 **Outputs:**
 
-- `[isHovered: boolean, { onMouseEnter: () => void; onMouseLeave: () => void }]`
+- `[isHovered: boolean, { onPointerEnter: () => void; onPointerLeave: () => void }]`
 
 ### `useFocusTrap`
 
@@ -249,7 +237,7 @@ Manages refs for dynamic lists
 
 **Outputs:**
 
-- `[setRef: (index: number) => (element: T | null) => void, refs: T[]]`
+- `[setRef: (index: number) => (element: T | null) => void, refs: React.RefObject<T[]>]`
 
 ### `useSynchronizedScroll`
 
@@ -365,12 +353,12 @@ Processes events sequentially
 Manages multi-step forms  
 **Inputs:**
 
-- `steps: StepComponent[]`
-- `initialData?: any`
+- `steps`: StepComponent[]
+- `initialData?`: any
 
 **Outputs:**
 
-- `{ CurrentStep: React.FC, currentStep: number, next: (stepData?: any) => void, prev: () => void, goToStep: (index: number) => void, formData: any, isFirst: boolean, isLast: boolean, totalSteps: number }`
+- `{ CurrentStep: React.FC<{ next: (data?: any) => void; prev: () => void; data: any; isFirst: boolean; isLast: boolean }>, currentStep: number, next: (stepData?: any) => void, prev: () => void, goToStep: (index: number) => void, formData: any, isFirst: boolean, isLast: boolean, totalSteps: number }`
 
 ---
 
@@ -504,7 +492,6 @@ Manages form input validation
 
 - `effect: React.EffectCallback`
 - `dependencies: any[]`
-- `shallowFallback?: boolean` (optional fallback to shallow comparison)
 
 **Outputs:**
 
@@ -576,7 +563,7 @@ Fetches data with caching
 **Inputs:**
 
 - `url: string`
-- `options?: RequestInit`
+- `options?: AxiosRequestConfig`
 - `cacheKey?: string`
 
 **Outputs:**
@@ -619,7 +606,7 @@ Catches component errors
 
 **Outputs:**
 
-- `{ setError: (error: Error) => void, resetError: () => void }`
+- `{ throwError: (error: Error) => void, resetError: () => void }`
 
 ---
 
@@ -641,16 +628,16 @@ Attaches event listeners
 
 ### `useLocalStorageEffect`
 
-Effect based on localStorage  
+Effect based on localStorage with cleanup  
 **Inputs:**
 
 - `key: string`
-- `effect: (storedValue: any) => void`
+- `effect: (storedValue: any) => void | (() => void)`
 - `dependencies?: any[]`
 
 **Outputs:**
 
-- None
+- None (side-effect with optional cleanup)
 
 ### `useEventEmitter`
 
@@ -784,17 +771,28 @@ LIFO (Last-In-First-Out) data structure
 
 - `{ items: T[], size: number, isEmpty: boolean, push: (item: T) => void, pop: () => T | undefined, peek: () => T | undefined, clear: () => void }`
 
-### `useFrozenState`
+### `useConditionalState`
 
-Prevent state updates when frozen  
+Conditionally prevent state updates  
 **Inputs:**
 
 - `initialValue`: T
-- `freezeCondition`: boolean
+- `condition`: boolean (when true, prevents state updates)
 
 **Outputs:**
 
-- `[state: T, setFrozenState: React.Dispatch<React.SetStateAction<T>>]`
+- `[state: T, setConditionalState: React.Dispatch<React.SetStateAction<T>>]`
+
+### `useKeyPress`
+
+Track keyboard key presses  
+**Inputs:**
+
+- `targetKey`: string | string[] (key or array of keys to track)
+
+**Outputs:**
+
+- `keyPressed: boolean` (true when any target key is pressed)
 
 ---
 
@@ -820,15 +818,22 @@ Detect if focus is within container
 
 ### `useLongPress`
 
-Detect long-press gestures  
+Detect long-press gestures with movement cancellation  
 **Inputs:**
 
-- `callback: () => void`
-- `duration?`: number (ms)
+- `callback`: () => void (function to execute on long press)
+- `duration?`: number = 500 (ms, time required to trigger long press)
 
 **Outputs:**
 
-- `Event handlers object: { onMouseDown, onMouseUp, onMouseLeave, onTouchStart, onTouchEnd }`
+- `Event handlers object`: {
+    onMouseDown: (e: React.MouseEvent) => void,
+    onMouseUp: () => void,
+    onMouseLeave: () => void,
+    onTouchStart: (e: React.TouchEvent) => void,
+    onTouchEnd: () => void,
+    onTouchMove: (e: React.TouchEvent) => void
+  }
 
 ### `useDrag`
 
@@ -1058,11 +1063,15 @@ Prevent screen sleep
 Comprehensive form management  
 **Inputs:**
 
-- `options?`: { initialValues?: Record<string, any>; validate?: (values: Record<string, any>) => Record<string, string>; onSubmit?: (values: Record<string, any>) => void }
+- `options`: {
+  initialValues: T;
+  validate?: { [K in keyof T]?: (value: T[K], values: T) => string | null };
+  onSubmit: (values: T) => void | Promise<void>;
+  }
 
 **Outputs:**
 
-- `{ values: Record<string, any>, errors: Record<string, string>, touched: Record<string, boolean>, isSubmitting: boolean, handleChange: (e: React.ChangeEvent) => void, handleBlur: (e: React.FocusEvent) => void, handleSubmit: (e: React.FormEvent) => void, resetForm: () => void, setFieldValue: (name: string, value: any) => void, setFieldTouched: (name: string, touched: boolean) => void, isValid: boolean }`
+- `{ values: T; errors: Record<keyof T, string | null>; touched: Record<keyof T, boolean>; isSubmitting: boolean; isValid: boolean; handleChange: <K extends keyof T>(field: K, value: T[K]) => void; handleBlur: (field: keyof T) => void; handleSubmit: (e?: React.FormEvent) => Promise<void>; resetForm: () => void; setFieldValue: <K extends keyof T>(field: K, value: T[K]) => void; setFieldTouched: (field: keyof T) => void; }`
 
 ### `useField`
 
@@ -1098,7 +1107,7 @@ Memoize with custom comparison
 **Inputs:**
 
 - `value`: T
-- `compare`: (a: T, b: T) => boolean
+- `compare`: (prev: T | undefined, current: T) => boolean
 
 **Outputs:**
 
@@ -1145,16 +1154,15 @@ Track render count
 **Outputs:**
 
 - `count: number`
-
 ### `useUpdateEffect`
 
-Run effect only on updates  
+Run effect only on updates (skips initial render)  
 **Inputs:**
 
-- `effect`: React.EffectCallback
-- `deps?`: React.DependencyList
+- `effect`: React.EffectCallback (effect to run on updates)
+- `deps?`: React.DependencyList = [] (optional dependency array)
 
-**Outputs:** None (side-effect only)
+**Outputs:** None (side-effect hook)
 
 ### `useIsomorphicEffect`
 
@@ -1187,7 +1195,7 @@ Simplified data fetching
 **Inputs:**
 
 - `url`: string
-- `options?`: RequestInit
+- `options?`: AxiosRequestConfig
 
 **Outputs:**
 
@@ -1389,15 +1397,15 @@ Repeats callback at interval with time multiplier
 
 ### `useTimeFreeze`
 
-Pauses state updates until unfreezed  
+Returns frozen value when freeze is true, otherwise returns current value  
 **Inputs:**
 
-- `state: T`
-- `freeze: boolean`
+- `value`: T (current value)
+- `freeze`: boolean (when true, returns previous value)
 
 **Outputs:**
 
-- `frozenState: T`
+- `frozenValue`: T (either current or previous value based on freeze state)
 
 ### `useChronoDrift`
 

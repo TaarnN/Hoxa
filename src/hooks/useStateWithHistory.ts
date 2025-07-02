@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function useStateWithHistory<T>(
   initialValue: T,
@@ -17,6 +17,11 @@ export function useStateWithHistory<T>(
   const [value, setValue] = useState<T>(initialValue);
   const [history, setHistory] = useState<T[]>([initialValue]);
   const [pointer, setPointer] = useState(0);
+
+  useEffect(() => {
+    setHistory((prev) => prev.slice(-maxHistory));
+    setPointer((prev) => Math.min(prev, maxHistory - 1));
+  }, [maxHistory]);
 
   const set = useCallback(
     (newValue: T | ((prev: T) => T)) => {

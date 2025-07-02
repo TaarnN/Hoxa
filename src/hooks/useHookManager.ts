@@ -1,13 +1,14 @@
 // useHookManager.ts
 import { useEffect } from "react";
 
-export function useHookManager(hooks: Array<() => any>) {
-  const results = hooks.map((hook) => hook());
+export function useHookManager(effects: Array<() => (void | (() => void))>) {
   useEffect(() => {
+    const cleanups: Array<void | (() => void)> = effects.map(effect => effect());
+    
     return () => {
-      // optional cleanup if hooks return cleanup
-      results.forEach((r) => typeof r === "function" && r());
+      cleanups.forEach(cleanup => {
+        if (typeof cleanup === 'function') cleanup();
+      });
     };
   }, []);
-  return results;
 }

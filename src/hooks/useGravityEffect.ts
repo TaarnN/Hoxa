@@ -26,5 +26,5 @@ export function useGravityEffect(
       });
     });
     return () => anims.forEach((a) => a && a.kill());
-  }, [refs, JSON.stringify(options)]);
+  }, [refs, options.gravity, options.mass, options.float]);
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type NetworkInfo = {
   effectiveType: string;
@@ -28,6 +28,15 @@ export function useNetworkStatus() {
     downlink: 0,
     saveData: false,
   });
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const navigatorWithConnection = navigator as NavigatorWithConnection;
@@ -42,6 +51,8 @@ export function useNetworkStatus() {
     }
 
     const updateStatus = () => {
+      if (!isMountedRef.current) return;
+      
       setStatus({
         effectiveType: connection.effectiveType,
         rtt: connection.rtt,

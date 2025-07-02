@@ -12,7 +12,14 @@ const defaultBreakpoints = {
 export function useBreakpoint(
   breakpoints: Record<string, number> = defaultBreakpoints
 ): string {
-  const [currentBreakpoint, setCurrentBreakpoint] = useState("");
+  const [currentBreakpoint, setCurrentBreakpoint] = useState(() => {
+    const sorted = Object.entries(breakpoints).sort((a, b) => b[1] - a[1]);
+    const width = window.innerWidth;
+    for (const [name, size] of sorted) {
+      if (width >= size) return name;
+    }
+    return "";
+  });
 
   useEffect(() => {
     const sortedBreakpoints = Object.entries(breakpoints).sort(
@@ -33,9 +40,7 @@ export function useBreakpoint(
       setCurrentBreakpoint(breakpoint);
     };
 
-    updateBreakpoint();
     window.addEventListener("resize", updateBreakpoint);
-
     return () => window.removeEventListener("resize", updateBreakpoint);
   }, [breakpoints]);
 

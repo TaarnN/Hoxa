@@ -1,26 +1,33 @@
 import { useEffect, useRef } from "react";
 
-export function useEventListener<K extends keyof WindowEventMap>(
+type EventTargetElement = Window | Document | HTMLElement | null;
+
+export function useEventListener<K extends keyof HTMLElementEventMap>(
   eventType: K,
-  handler: (event: WindowEventMap[K]) => void,
-  element: Window | Document = window,
+  handler: (event: HTMLElementEventMap[K]) => void,
+  element?: EventTargetElement,
   options?: AddEventListenerOptions
 ) {
   const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  useEffect(() => {
+    handlerRef.current = handler;
+  }, [handler]);
 
   useEffect(() => {
-    const eventListener = (event: WindowEventMap[K]) =>
+    const target = element || window;
+    if (!target) return;
+
+    const eventListener = (event: HTMLElementEventMap[K]) =>
       handlerRef.current(event);
 
-    element.addEventListener(
+    target.addEventListener(
       eventType,
       eventListener as EventListener,
       options
     );
 
     return () => {
-      element.removeEventListener(
+      target.removeEventListener(
         eventType,
         eventListener as EventListener,
         options

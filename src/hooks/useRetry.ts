@@ -24,28 +24,28 @@ export function useRetry<T>(
   const execute = useCallback(async () => {
     setLoading(true);
     setError(null);
+    let lastError: Error | null = null;
 
-    try {
-      const result = await asyncFn();
-      setData(result);
-      onSuccess?.(result);
-      return result;
-    } catch (err) {
-      const currentAttempt = attempt + 1;
+    for (let currentAttempt = 0; currentAttempt <= retries; currentAttempt++) {
       setAttempt(currentAttempt);
-
-      if (currentAttempt >= retries) {
-        setError(err as Error);
+      try {
+        const result = await asyncFn();
+        setData(result);
+        onSuccess?.(result);
         setLoading(false);
-        onError?.(err as Error, currentAttempt);
-        throw err;
+        return result;
+      } catch (err) {
+        lastError = err as Error;
+        setError(lastError);
+        onError?.(lastError, currentAttempt);
+        if (currentAttempt < retries) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
       }
-
-      // Schedule retry
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      return execute();
     }
-  }, [asyncFn, attempt, retries, retryDelay, onSuccess, onError]);
+    setLoading(false);
+    throw lastError;
+  }, [asyncFn, retries, retryDelay, onSuccess, onError]);
 
   const retry = useCallback(() => {
     setAttempt(0);

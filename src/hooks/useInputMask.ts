@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useInputMask(
   mask: string,
@@ -99,6 +99,13 @@ export function useInputMask(
       const { masked, raw } = applyMask(value);
       setMaskedValue(masked);
       setRawValue(raw);
+
+      // Preserve cursor position
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.value = masked;
+        }
+      });
     },
     [applyMask]
   );

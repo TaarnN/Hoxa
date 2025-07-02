@@ -1,4 +1,3 @@
-// Fixed code
 import { useEffect, useRef, useCallback } from "react";
 import type { RefObject } from "react";
 
@@ -15,15 +14,12 @@ export function useClickOutside<T extends HTMLElement>(
     const listener = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
 
-      // Check if event originated from excluded elements
-      if (
-        (event as MouseEvent)
-          .composedPath?.()
-          .some((el) =>
-            elements?.some((ref) => ref.current?.contains(el as Node))
-          )
-      ) {
-        return;
+      // Check excluded elements
+      if (elements) {
+        const isInsideExcluded = elements.some((ref) =>
+          ref.current?.contains(target)
+        );
+        if (isInsideExcluded) return;
       }
 
       // Check provided elements or default ref

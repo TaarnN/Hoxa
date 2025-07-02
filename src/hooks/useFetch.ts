@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import type { AxiosRequestConfig, CancelTokenSource } from "axios";
 
 export function useFetch<T = unknown>(
   url: string,
-  options?: RequestInit
+  options?: AxiosRequestConfig
 ): {
   data: T | null;
   loading: boolean;
@@ -14,37 +16,43 @@ export function useFetch<T = unknown>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [trigger, setTrigger] = useState(0);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const cancelTokenSourceRef = useRef<CancelTokenSource | null>(null);
+  const isMountedRef = useRef(true);
 
   const refetch = () => setTrigger((prev) => prev + 1);
-  const abort = () => abortControllerRef.current?.abort();
+  const abort = () => cancelTokenSourceRef.current?.cancel();
 
   useEffect(() => {
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      cancelTokenSourceRef.current?.cancel();
+    };
+  }, []);
+
+  useEffect(() => {
+    cancelTokenSourceRef.current?.cancel();
+    cancelTokenSourceRef.current = axios.CancelToken.source();
 
     const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
-        const response = await fetch(url, {
+        if (!isMountedRef.current) return;
+        setLoading(true);
+        setError(null);
+
+        const response = await axios.get<T>(url, {
           ...options,
-          signal,
+          cancelToken: cancelTokenSourceRef.current?.token,
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const responseData = await response.json();
-        setData(responseData);
+        if (isMountedRef.current) setData(response.data);
       } catch (err) {
-        if (!signal.aborted) {
+        if (isMountedRef.current && !axios.isCancel(err)) {
           setError(err as Error);
         }
       } finally {
-        if (!signal.aborted) {
+        if (isMountedRef.current) {
           setLoading(false);
         }
       }
@@ -53,7 +61,7 @@ export function useFetch<T = unknown>(
     fetchData();
 
     return () => {
-      abortControllerRef.current?.abort();
+      cancelTokenSourceRef.current?.cancel();
     };
   }, [url, options, trigger]);
 

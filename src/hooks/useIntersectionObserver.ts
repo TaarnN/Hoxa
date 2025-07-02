@@ -1,5 +1,4 @@
-// Fixed code
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { RefObject } from "react";
 
 export function useIntersectionObserver(
@@ -10,9 +9,7 @@ export function useIntersectionObserver(
   const [isIntersecting, setIsIntersecting] = useState(false);
   const targetRef = useRef<Element>(null);
   const observerRef = useRef<IntersectionObserver>(null);
-
-  const stableOptions = useCallback(() => options, [options]);
-
+  
   useEffect(() => {
     if (!enabled || !targetRef.current) return;
 
@@ -21,7 +18,7 @@ export function useIntersectionObserver(
         setEntry(entry);
         setIsIntersecting(entry.isIntersecting);
       }
-    }, stableOptions());
+    }, options);
 
     observerRef.current = observer;
     observer.observe(targetRef.current);
@@ -29,7 +26,7 @@ export function useIntersectionObserver(
     return () => {
       observerRef.current?.disconnect();
     };
-  }, [stableOptions, enabled]);
+  }, [options, enabled]);
 
   return [targetRef, isIntersecting, entry];
 }

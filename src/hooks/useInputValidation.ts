@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 type ValidationRules = {
   required?: boolean;
@@ -15,33 +15,39 @@ export function useInputValidation(
   const [value, setValue] = useState(initialValue);
   const [errors, setErrors] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
+  const valueRef = useRef(value);
+  
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   const validate = useCallback(() => {
+    const currentValue = valueRef.current;
     const newErrors: string[] = [];
 
-    if (rules.required && !value.trim()) {
+    if (rules.required && !currentValue.trim()) {
       newErrors.push("Field is required");
     }
 
-    if (rules.minLength && value.length < rules.minLength) {
+    if (rules.minLength && currentValue.length < rules.minLength) {
       newErrors.push(`Minimum length is ${rules.minLength}`);
     }
 
-    if (rules.maxLength && value.length > rules.maxLength) {
+    if (rules.maxLength && currentValue.length > rules.maxLength) {
       newErrors.push(`Maximum length is ${rules.maxLength}`);
     }
 
-    if (rules.pattern && !rules.pattern.test(value)) {
+    if (rules.pattern && !rules.pattern.test(currentValue)) {
       newErrors.push("Invalid format");
     }
 
-    if (rules.validate && !rules.validate(value)) {
+    if (rules.validate && !rules.validate(currentValue)) {
       newErrors.push("Custom validation failed");
     }
 
     setErrors(newErrors);
     return newErrors.length === 0;
-  }, [value, rules]);
+  }, [rules]);
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

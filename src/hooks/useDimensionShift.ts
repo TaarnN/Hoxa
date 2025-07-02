@@ -26,5 +26,5 @@ export function useDimensionShift(
         })
     );
     return () => anims.forEach((a) => a && a.kill());
-  }, [refs, JSON.stringify(options)]);
+  }, [refs, options.rotateX, options.rotateY, options.perspective]);
 }

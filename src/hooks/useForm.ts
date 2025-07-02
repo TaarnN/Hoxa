@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 type ValidationRules<T> = {
   [K in keyof T]?: (value: T[K], values: T) => string | null;
@@ -20,6 +20,26 @@ export function useForm<T extends Record<string, any>>(
   );
   const [touched, setTouched] = useState<Record<keyof T, boolean>>({} as any);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    if (!validate) {
+      setIsValid(true);
+      return;
+    }
+
+    let formIsValid = true;
+    const newErrors: Record<keyof T, string | null> = { ...errors };
+
+    for (const field in validate) {
+      const error = validate[field]!(values[field], values);
+      newErrors[field] = error;
+      if (error) formIsValid = false;
+    }
+
+    setErrors(newErrors);
+    setIsValid(formIsValid);
+  }, [values, validate]);
 
   const validateField = useCallback(
     (field: keyof T) => {
@@ -33,22 +53,6 @@ export function useForm<T extends Record<string, any>>(
     },
     [values, validate]
   );
-
-  const validateForm = useCallback(() => {
-    if (!validate) return true;
-
-    let isValid = true;
-    const newErrors: Record<keyof T, string | null> = { ...errors };
-
-    for (const field in validate) {
-      const error = validate[field]!(values[field], values);
-      newErrors[field] = error;
-      if (error) isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  }, [values, validate, errors]);
 
   const handleChange = useCallback(
     <K extends keyof T>(field: K, value: T[K]) => {
@@ -66,27 +70,41 @@ export function useForm<T extends Record<string, any>>(
 
   const handleBlur = useCallback(
     (field: keyof T) => {
-      setTouched((prev) => ({
-        ...prev,
-        [field]: true,
-      }));
+      if (!touched[field]) {
+        setTouched((prev) => ({
+          ...prev,
+          [field]: true,
+        }));
+      }
       validateField(field);
     },
-    [validateField]
+    [touched, validateField]
   );
 
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       e?.preventDefault();
 
-      setTouched(
-        Object.keys(values).reduce((acc, key) => {
-          acc[key as keyof T] = true;
-          return acc;
-        }, {} as Record<keyof T, boolean>)
-      );
+      const newTouched = Object.keys(values).reduce((acc, key) => {
+        acc[key as keyof T] = true;
+        return acc;
+      }, {} as Record<keyof T, boolean>);
+      
+      setTouched(newTouched);
 
-      if (!validateForm()) return;
+      if (validate) {
+        let formIsValid = true;
+        const newErrors: Record<keyof T, string | null> = { ...errors };
+
+        for (const field in validate) {
+          const error = validate[field]!(values[field], values);
+          newErrors[field] = error;
+          if (error) formIsValid = false;
+        }
+
+        setErrors(newErrors);
+        if (!formIsValid) return;
+      }
 
       setIsSubmitting(true);
       try {
@@ -95,13 +113,14 @@ export function useForm<T extends Record<string, any>>(
         setIsSubmitting(false);
       }
     },
-    [values, validateForm, onSubmit]
+    [values, validate, errors, onSubmit]
   );
 
   const resetForm = useCallback(() => {
     setValues(initialValues);
     setErrors({} as Record<keyof T, string | null>);
     setTouched({} as Record<keyof T, boolean>);
+    setIsValid(false);
   }, [initialValues]);
 
   return {
@@ -109,12 +128,12 @@ export function useForm<T extends Record<string, any>>(
     errors,
     touched,
     isSubmitting,
+    isValid,
     handleChange,
     handleBlur,
     handleSubmit,
     resetForm,
     setFieldValue: handleChange,
     setFieldTouched: handleBlur,
-    isValid: Object.values(errors).every((error) => !error),
   };
 }

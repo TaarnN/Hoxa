@@ -4,27 +4,34 @@ export function useElementSize<T extends HTMLElement>(): [
   React.RefObject<T | null>,
   { width: number; height: number }
 ] {
-  const ref = useRef<T>(null);
+  const ref = useRef<T | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
+    if (typeof window === "undefined" || !ref.current) return;
 
     const updateSize = () => {
-      setSize({
-        width: node.offsetWidth,
-        height: node.offsetHeight,
-      });
+      if (ref.current) {
+        setSize({
+          width: ref.current.offsetWidth,
+          height: ref.current.offsetHeight,
+        });
+      }
     };
 
     updateSize();
 
-    const resizeObserver = new ResizeObserver(updateSize);
-    resizeObserver.observe(node);
+    if (!resizeObserverRef.current) {
+      resizeObserverRef.current = new ResizeObserver(updateSize);
+    }
+
+    resizeObserverRef.current.observe(ref.current);
 
     return () => {
-      resizeObserver.disconnect();
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
     };
   }, []);
 

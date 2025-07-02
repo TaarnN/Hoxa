@@ -1,7 +1,7 @@
 {
   "name": "hoxa",
-  "version": "0.1.4",
-  "description": "100+ Curated React Hooks to Simplify Your Codebase",
+  "version": "0.2.0",
+  "description": "A comprehensive collection of 100+ production-ready React hooks for state management, UI effects, forms, animations, and more. Carefully curated and optimized for performance and developer experience.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

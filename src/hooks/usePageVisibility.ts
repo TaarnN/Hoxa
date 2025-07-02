@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 
 export function usePageVisibility() {
-  const [isVisible, setIsVisible] = useState(!document.hidden);
+  const [isVisible, setIsVisible] = useState(true); // Default to true for SSR
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    setIsVisible(!document.hidden);
+
     const handleVisibilityChange = () => {
       setIsVisible(!document.hidden);
     };

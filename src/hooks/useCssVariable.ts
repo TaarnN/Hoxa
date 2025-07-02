@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 
 export function useCssVariable(
   name: string,
-  element: HTMLElement | null = document.documentElement
+  element: HTMLElement | null = typeof document !== "undefined" 
+    ? document.documentElement 
+    : null
 ): [string | null, (value: string) => void] {
   const [value, setValue] = useState<string | null>(null);
 
@@ -16,7 +18,7 @@ export function useCssVariable(
   );
 
   useEffect(() => {
-    if (!element) return;
+    if (!element || typeof window === "undefined") return;
 
     const getValue = () => {
       return getComputedStyle(element).getPropertyValue(name).trim() || null;

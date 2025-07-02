@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export function useCopyToClipboard(
   timeout: number = 2000
 ): [boolean, (text: string) => Promise<boolean>] {
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const copyToClipboard = async (text: string) => {
     if (!navigator?.clipboard) {
@@ -14,7 +15,8 @@ export function useCopyToClipboard(
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), timeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setCopied(false), timeout);
       return true;
     } catch (err) {
       console.error("Failed to copy:", err);
@@ -22,6 +24,12 @@ export function useCopyToClipboard(
       return false;
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   return [copied, copyToClipboard];
 }
