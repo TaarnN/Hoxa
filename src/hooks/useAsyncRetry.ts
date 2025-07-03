@@ -40,7 +40,7 @@ export function useAsyncRetry<T>(
 
     const execute = async () => {
       try {
-        setState((prev) => ({ ...prev, loading: true, error: null }));
+        setState(prev => ({ ...prev, loading: true, error: null }));
         const result = await asyncFunction();
         if (isMounted && !cancelRef.current) {
           setState({
@@ -52,9 +52,12 @@ export function useAsyncRetry<T>(
         }
       } catch (error) {
         if (isMounted && !cancelRef.current) {
-          setState((prev) => {
+          setState(prev => {
             if (prev.retryCount < maxRetries) {
-              timeoutId = setTimeout(retry, retryDelay);
+              timeoutId = setTimeout(() => {
+                setTrigger(t => t + 1);
+                setState(s => ({ ...s, retryCount: s.retryCount + 1 }));
+              }, retryDelay);
             }
             return {
               loading: false,
@@ -74,7 +77,7 @@ export function useAsyncRetry<T>(
       cancelRef.current = true;
       clearTimeout(timeoutId);
     };
-  }, [trigger, asyncFunction, retryDelay, maxRetries, retry]);
+  }, [trigger, asyncFunction, retryDelay, maxRetries]);
 
   return { ...state, retry, cancel };
 }

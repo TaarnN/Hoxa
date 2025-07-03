@@ -1,35 +1,125 @@
-# 🚀 Hoxa - React Hook Library
+# 🚀 Hoxa – The Ultimate React Hook Library
 
-Remember? You needed these hooks yesterday
+<p align="center">
+  <a href="https://www.npmjs.com/package/hoxa"><img src="https://img.shields.io/npm/v/hoxa.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/hoxa"><img src="https://img.shields.io/npm/dw/hoxa.svg" alt="npm downloads" /></a>
+  <a href="https://github.com/TaarnN/Hoxa/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" /></a>
+</p>
 
-[![NPM version](https://img.shields.io/npm/v/hoxa.svg)](https://www.npmjs.com/package/hoxa)
-[![NPM downloads](https://img.shields.io/npm/dw/hoxa.svg)](https://www.npmjs.com/package/hoxa)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://www.npmjs.com/package/hoxa?activeTab=code)
+> **100% Tested** • **100+ Production‑Ready Hooks** • **Zero Boilerplate**  
+> Fast, lightweight, and battle‑tested—perfect for any React/Next.js project.
 
-> A comprehensive collection of **100+ production-ready React hooks** for state management, UI effects, forms, animations, and more. Carefully curated and optimized for performance and developer experience.
-> Perfect for any React/Next.js project.
-
-⭐️ Star us on GitHub → https://github.com/TaarnN/Hoxa
-
----
-
-## ✨ Features
-
-- 🧠 **100+ hooks**: utility, DOM, event, state, media, form, storage, etc.
-- 🔧 Built with developer experience in mind
-- 💡 Useful defaults, real-world use cases
+⭐️ Star us on GitHub: [TaarnN/Hoxa](https://github.com/TaarnN/Hoxa)
 
 ---
 
-## 📦 Installation
+## ✨ Why Hoxa?
+
+- **All Hooks Fully Tested** ✅  
+  Every hook comes with comprehensive unit tests—trustworthy and bug‑free.
+- **100+ Hooks in One Package**  
+  State, UI, forms, animations, networking, performance, and more.
+- **Easy to Use**  
+  Install, import, and call. No heavy dependencies.
+- **Lightweight & Performant**  
+  Minimal bundle impact, optimized for real‑world apps.
+
+---
+
+## 🚀 Installation
 
 ```bash
+# npm
 npm install hoxa
-# or
+
+# Yarn
 yarn add hoxa
-# or
+
+# Bun
 bun add hoxa
+
 ```
+
+## 📖 Basic Usage Example
+
+```tsx
+import React from "react";
+import { useLocalStorageState, useClickOutside, useFetchWithCache } from "hoxa";
+
+export function App() {
+  const [name, setName] = useLocalStorageState("name", "Guest");
+  const { data, loading, error } = useFetchWithCache<{ message: string }>(
+    "https://api.example.com/hello"
+  );
+
+  const handleOutsideClick = () => console.log("Clicked outside!");
+  const ref = useClickOutside(handleOutsideClick);
+
+  return (
+    <div ref={ref} style={{ padding: 20 }}>
+      <h1>Hello, {name}!</h1>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter your name"
+      />
+
+      {loading && <p>Loading...</p>}
+      {error && <p>Error loading data.</p>}
+      {data && <p>API says: {data.message}</p>}
+    </div>
+  );
+}
+```
+
+---
+
+## 🔥 Key Features
+
+### **State Management**
+- `useUndoRedo`: Track and navigate state history
+- `useDebouncedState`: Delay state updates until inactivity
+- `useThrottleState`: Limit state update frequency
+- `useConditionalState`: State that only updates when conditions are met
+- `useQueue`/`useStack`: Collection management with FIFO/LIFO semantics
+
+### **UI & DOM Interactions**  
+- `useHover`: Detect element hover state
+- `useFocusTrap`: Contain focus within DOM elements  
+- `useIntersectionObserver`: Track element visibility
+- `useElementSize`: Monitor element dimensions
+- `useDrag`/`useDrop`: Drag-and-drop utilities
+
+### **Async & Networking**  
+- `useAsyncRetry`: Auto-retry failed async operations  
+- `usePromiseQueue`: Manage concurrent promise execution  
+- `useFetchWithCache`: Network requests with caching  
+- `useWebSocket`: Real-time WebSocket management
+- `useConcurrentRequests`: Parallel request handling
+
+### **Performance Optimization**  
+- `useDeepCompareEffect`: Skip unnecessary effect runs  
+- `useThrottleEvent`: Rate-limit event handlers  
+- `useRenderCount`: Track component re-renders  
+- `useMemoCompare`: Memoize with custom comparison  
+- `useIsFirstRender`: Detect initial mount
+
+### **Forms & Validation**  
+- `useForm`: Complete form state management  
+- `useInputValidation`: Real-time field validation  
+- `useMultiStepForm`: Wizard-style form flows  
+- `useField`: Isolated form field control  
+- `useFormReset`: Form state reset utilities
+
+### **Animations & Effects**  
+- `useGravityEffect`: Physics-based animations  
+- `useEmojiRain`: Falling emoji effects  
+- `useRetroFilter`: Vintage visual effects  
+- `useConfettiSurprise`: Celebration animations  
+- `useMoodLighting`: Dynamic color themes
+
+...and more specialized hooks for every use case!
+
 
 ---
 
@@ -145,7 +235,7 @@ Detects clicks outside element(s)
 **Inputs:**
 
 - `handler: (event: MouseEvent | TouchEvent) => void`
-- `elements?: RefObject<HTMLElement>[] | null`
+- `elements?: RefObject<Element>[] | null`
 
 **Outputs:**
 
@@ -239,17 +329,6 @@ Manages refs for dynamic lists
 
 - `[setRef: (index: number) => (element: T | null) => void, refs: React.RefObject<T[]>]`
 
-### `useSynchronizedScroll`
-
-Synchronizes scrolling between elements  
-**Inputs:**
-
-- `refs: React.RefObject<HTMLElement>[]`
-
-**Outputs:**
-
-- None
-
 ### `useGesture`
 
 Detects drag gestures  
@@ -259,7 +338,7 @@ Detects drag gestures
 
 **Outputs:**
 
-- `[ref: React.RefObject<HTMLElement>, state: { isDragging: boolean; startX: number; startY: number; deltaX: number; deltaY: number; }]`
+- `[ref: React.RefObject<Element>, state: { isDragging: boolean; startX: number; startY: number; deltaX: number; deltaY: number; }]`
 
 ### `useDarkMode`
 
@@ -290,14 +369,14 @@ Retries async functions automatically
 
 ### `usePromiseQueue`
 
-Queues promises sequentially  
+Processes promises sequentially in a queue  
 **Inputs:**
 
 - None
 
 **Outputs:**
 
-- `{ enqueue: (task: () => Promise<any>) => void, isRunning: boolean, queueSize: number }`
+- `{ enqueue: (task: () => Promise<any>) => void, isRunning: boolean }`
 
 ### `usePolling`
 
@@ -582,16 +661,17 @@ Loads external scripts
 
 - `status: 'loading' | 'ready' | 'error'`
 
-### `useScriptState`
+### `preloadScript`
 
-Tracks script loading status  
+Preloads scripts immediately (at module level)  
 **Inputs:**
 
 - `src: string`
+- `options?: { async?: boolean; defer?: boolean; attributes?: Record<string, string> }`
 
 **Outputs:**
 
-- `status: 'loading' | 'ready' | 'error' | 'idle'`
+- None
 
 ---
 
@@ -606,7 +686,7 @@ Catches component errors
 
 **Outputs:**
 
-- `{ throwError: (error: Error) => void, resetError: () => void }`
+- `{ throwError: (error: Error) => void, resetError: () => void, ErrorBoundary: React.FC<{ children: ReactNode; fallback: ReactNode }>, error: Error | null }`
 
 ---
 
@@ -625,19 +705,6 @@ Attaches event listeners
 **Outputs:**
 
 - None
-
-### `useLocalStorageEffect`
-
-Effect based on localStorage with cleanup  
-**Inputs:**
-
-- `key: string`
-- `effect: (storedValue: any) => void | (() => void)`
-- `dependencies?: any[]`
-
-**Outputs:**
-
-- None (side-effect with optional cleanup)
 
 ### `useEventEmitter`
 
@@ -805,7 +872,7 @@ Track element focus state
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, isFocused: boolean, focus: () => void]`
+- `[ref: RefObject<Element>, isFocused: boolean, focus: () => void]`
 
 ### `useFocusWithin`
 
@@ -814,7 +881,7 @@ Detect if focus is within container
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, isFocusWithin: boolean]`
+- `[ref: RefObject<Element>, isFocusWithin: boolean]`
 
 ### `useLongPress`
 
@@ -827,13 +894,15 @@ Detect long-press gestures with movement cancellation
 **Outputs:**
 
 - `Event handlers object`: {
-    onMouseDown: (e: React.MouseEvent) => void,
-    onMouseUp: () => void,
-    onMouseLeave: () => void,
-    onTouchStart: (e: React.TouchEvent) => void,
-    onTouchEnd: () => void,
-    onTouchMove: (e: React.TouchEvent) => void
+  onMouseDown: (e: React.MouseEvent) => void,
+  onMouseUp: () => void,
+  onMouseLeave: () => void,
+  onTouchStart: (e: React.TouchEvent) => void,
+  onTouchEnd: () => void,
+  onTouchMove: (e: React.TouchEvent) => void
   }
+
+**\*\*Must include "// @ts-ignore" before using handlers if use TS**
 
 ### `useDrag`
 
@@ -842,7 +911,7 @@ Handle drag operations
 
 **Outputs:**
 
-- `{ dragRef: RefObject<HTMLElement>, isDragging: boolean, handleMouseDown: (e: React.MouseEvent) => void }`
+- `{ dragRef: RefObject<Element>, isDragging: boolean, handleMouseDown: (e: React.MouseEvent) => void }`
 
 ### `useDrop`
 
@@ -853,7 +922,7 @@ Create drop targets
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, isOver: boolean, isDropped: boolean]`
+- `[ref: RefObject<Element>, isOver: boolean, isDropped: boolean]`
 
 ### `useFullscreen`
 
@@ -862,7 +931,7 @@ Control fullscreen mode
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, isFullscreen: boolean, enter: () => void, exit: () => void]`
+- `[ref: RefObject<Element>, isFullscreen: boolean, enter: () => void, exit: () => void]`
 
 ### `useElementSize`
 
@@ -871,7 +940,7 @@ Track element dimensions
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, size: { width: number; height: number }]`
+- `[ref: RefObject<Element>, size: { width: number; height: number }]`
 
 ### `useViewportPosition`
 
@@ -880,7 +949,7 @@ Track element position in viewport
 
 **Outputs:**
 
-- `[ref: RefObject<HTMLElement>, position: { top: number; left: number; visibleRatio: number }]`
+- `[ref: RefObject<Element>, position: { top: number; left: number; visibleRatio: number }]`
 
 ### `useMousePosition`
 
@@ -1085,18 +1154,6 @@ Manage individual form fields
 
 - `{ value: T, error: string | null, touched: boolean, onChange: (e: React.ChangeEvent) => void, onBlur: (e: React.FocusEvent) => void, setValue: (value: T) => void, setTouched: (touched: boolean) => void }`
 
-### `useInputMask`
-
-Apply input masking  
-**Inputs:**
-
-- `mask`: string
-- `options?`: { placeholderChar?: string; autofix?: boolean }
-
-**Outputs:**
-
-- `{ maskedValue: string, rawValue: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onBlur: (e: React.FocusEvent<HTMLInputElement>) => void, setValue: (value: string) => void, inputRef: RefObject<HTMLInputElement> }`
-
 ---
 
 ## Performance
@@ -1154,6 +1211,7 @@ Track render count
 **Outputs:**
 
 - `count: number`
+
 ### `useUpdateEffect`
 
 Run effect only on updates (skips initial render)  
@@ -1262,7 +1320,7 @@ Generate accessible unique IDs
 Simulates gravity on elements using CSS transforms  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `options?`: `{ gravity?: number }`
 
 **Outputs:**
@@ -1274,19 +1332,8 @@ Simulates gravity on elements using CSS transforms
 Applies wind animation to elements  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `options?`: `{ direction?: 'left' | 'right' | 'up' | 'down'; intensity?: number }`
-
-**Outputs:**
-
-- `cleanup: () => void`
-
-### `useTimeWarp`
-
-Speeds up or slows down UI effects globally  
-**Inputs:**
-
-- `multiplier`: number (e.g., 2 = double speed)
 
 **Outputs:**
 
@@ -1297,7 +1344,7 @@ Speeds up or slows down UI effects globally
 Applies 3D transformation to elements  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `options?`: `{ rotateX?: number; rotateY?: number; perspective?: number }`
 
 **Outputs:**
@@ -1309,7 +1356,7 @@ Applies 3D transformation to elements
 Applies surreal floating and blur animations  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `intensity?`: number (0–1)
 
 **Outputs:**
@@ -1321,7 +1368,7 @@ Applies surreal floating and blur animations
 Applies vintage filters like sepia/pixelate  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `filter`: `'sepia' | 'pixelate' | 'scanlines'`
 
 **Outputs:**
@@ -1333,7 +1380,7 @@ Applies vintage filters like sepia/pixelate
 Creates falling emoji animations  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `emojiList`: string[]
 - `speed?`: number (default: 20)
 
@@ -1371,30 +1418,6 @@ Connects to AI API for chatbot-like interactions
 
 ## Time Control
 
-### `useTimeTravelState`
-
-Rewind or forward state like a time machine  
-**Inputs:**
-
-- `initialValue: T`
-
-**Outputs:**
-
-- `{ state, setState, rewind, forward, canRewind, canForward }`
-
-### `useChronoLoop`
-
-Repeats callback at interval with time multiplier  
-**Inputs:**
-
-- `callback: () => void`
-- `interval: number`
-- `multiplier?`: number
-
-**Outputs:**
-
-- `{ start, stop, isRunning }`
-
 ### `useTimeFreeze`
 
 Returns frozen value when freeze is true, otherwise returns current value  
@@ -1412,7 +1435,7 @@ Returns frozen value when freeze is true, otherwise returns current value
 Applies slow movement to elements over time  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `duration`: number (in seconds)
 
 **Outputs:**
@@ -1440,7 +1463,7 @@ Adjusts app theme based on real-time weather
 Changes UI lighting based on mood  
 **Inputs:**
 
-- `mood: 'happy' | 'calm' | 'sad' | ...`
+- `mood: 'happy' | 'sad' | 'angry' | 'calm' | 'excited' | 'neutral' | 'surprised' | 'fearful' | 'disgusted' | 'contempt' | 'bored' | 'confused' | 'embarrassed' | 'proud' | 'ashamed' | 'jealous' | 'guilty' | 'grateful' | 'hopeful' | 'lonely' | 'loved' | 'optimistic' | 'pessimistic' | 'relaxed' | 'stressed' | 'focused' | 'tired' | 'energetic' | 'creative' | 'nostalgic' | 'romantic' | 'adventurous' | 'confident' | 'anxious' | 'playful' | 'serious' | 'curious' | 'determined' | 'peaceful' | 'melancholic' | 'euphoric' | 'indifferent' | 'inspired' | 'overwhelmed' | 'satisfied' | 'disappointed'`
 
 **Outputs:**
 
@@ -1478,7 +1501,7 @@ Teleports elements to random positions
 Applies holographic 3D look  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 - `options?`: `{ rotation?: number; depth?: number }`
 
 **Outputs:**
@@ -1565,7 +1588,7 @@ Logs hook updates and internal state
 Randomly fades elements in/out  
 **Inputs:**
 
-- `ref`: RefObject<HTMLElement>
+- `ref`: RefObject<Element>
 
 **Outputs:**
 
@@ -1579,18 +1602,6 @@ Flips UI horizontally or vertically
 **Outputs:**
 
 - `{ style: React.CSSProperties; flipX: () => void; flipY: () => void }`
-
-### `useChaosMonkey`
-
-Injects chaos into UI for testing  
-**Inputs:**
-
-- `ref`: RefObject<HTMLElement>
-- `chaosLevel`: number (0–1)
-
-**Outputs:**
-
-- `logs: string[]`
 
 ### `useParallelUniverse`
 
@@ -1612,11 +1623,3 @@ Makes buttons dodge the mouse
 - `options?`: `{ distance?: number }`
 
 **Outputs:** None
-
----
-
-## Bugs Improvement
-
-If you encounter any bugs or issues while using this project, please report them to **taarn.ng@gmail.com**. Your feedback helps us improve and make the project better for everyone.
-
-Thank you for your support!

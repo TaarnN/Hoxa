@@ -1,38 +1,37 @@
 import { useState, useCallback, useRef } from "react";
 
 export function usePromiseQueue() {
-  const [isRunning, setIsRunning] = useState(false);
   const queueRef = useRef<Array<() => Promise<any>>>([]);
+  const runningRef = useRef(false);
+
+  const [isRunning, setIsRunning] = useState(false);
 
   const processQueue = useCallback(async () => {
-    if (isRunning || queueRef.current.length === 0) return;
+    if (runningRef.current) return;
+    if (queueRef.current.length === 0) {
+      setIsRunning(false);
+      return;
+    }
 
+    runningRef.current = true;
     setIsRunning(true);
-    const nextTask = queueRef.current.shift();
+
+    const task = queueRef.current.shift()!;
 
     try {
-      await nextTask?.();
-    } catch (error) {
-      console.error("Task failed:", error);
+      await task();
+    } catch (e) {
+      console.error("Task failed:", e);
     } finally {
-      setTimeout(() => {
-        setIsRunning(false);
-        processQueue();
-      }, 0);
-    }
-  }, [isRunning]);
-
-  const enqueue = useCallback(
-    (task: () => Promise<any>) => {
-      queueRef.current.push(task);
+      runningRef.current = false;
       processQueue();
-    },
-    [processQueue]
-  );
+    }
+  }, []);
 
-  return {
-    enqueue,
-    isRunning,
-    queueSize: queueRef.current.length,
-  };
+  const enqueue = useCallback((task: () => Promise<any>) => {
+    queueRef.current.push(task);
+    processQueue();
+  }, [processQueue]);
+
+  return { enqueue, isRunning };
 }

@@ -12,14 +12,14 @@ export function useRetry<T>(
   data: T | null;
   error: Error | null;
   loading: boolean;
-  attempt: number;
+  attempt: () => Promise<void>;
   retry: () => void;
 } {
   const { retries, retryDelay = 1000, onSuccess, onError } = options;
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(false);
-  const [attempt, setAttempt] = useState(0);
+  const [attemptCount, setAttemptCount] = useState(0);
 
   const execute = useCallback(async () => {
     setLoading(true);
@@ -27,7 +27,7 @@ export function useRetry<T>(
     let lastError: Error | null = null;
 
     for (let currentAttempt = 0; currentAttempt <= retries; currentAttempt++) {
-      setAttempt(currentAttempt);
+      setAttemptCount(currentAttempt);
       try {
         const result = await asyncFn();
         setData(result);
@@ -47,13 +47,17 @@ export function useRetry<T>(
     throw lastError;
   }, [asyncFn, retries, retryDelay, onSuccess, onError]);
 
-  const retry = useCallback(() => {
-    setAttempt(0);
-    execute().finally(() => setLoading(false));
+  const attempt = useCallback(async () => {
+    await execute().finally(() => setLoading(false));
   }, [execute]);
 
+  const retry = useCallback(() => {
+    setAttemptCount(0);
+    attempt();
+  }, [attempt]);
+
   useEffect(() => {
-    retry();
+    attempt();
   }, []);
 
   return {

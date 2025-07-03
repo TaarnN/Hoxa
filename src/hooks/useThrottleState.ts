@@ -5,12 +5,14 @@ export function useThrottleState<T>(
   interval: number
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(initialValue);
+  const [tick, setTick] = useState(0); // trigger effect
   const lastUpdateRef = useRef<number>(0);
   const pendingRef = useRef<T | null>(null);
   const isScheduledRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (isScheduledRef.current) return;
+
     const now = Date.now();
     const elapsed = now - lastUpdateRef.current;
 
@@ -25,6 +27,7 @@ export function useThrottleState<T>(
         pendingRef.current = null;
         lastUpdateRef.current = Date.now();
         isScheduledRef.current = false;
+        setTick((t) => t + 1); // trigger next check if needed
       }, interval - elapsed);
 
       return () => {
@@ -32,7 +35,7 @@ export function useThrottleState<T>(
         isScheduledRef.current = false;
       };
     }
-  }, [interval, value]);
+  }, [tick, interval]);
 
   const throttledSet = useCallback(
     (newValue: React.SetStateAction<T>) => {
@@ -41,6 +44,7 @@ export function useThrottleState<T>(
           ? (newValue as (prev: T) => T)(value)
           : newValue;
       pendingRef.current = resolvedValue;
+      setTick((t) => t + 1); // trigger effect
     },
     [value]
   );

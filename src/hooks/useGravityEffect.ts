@@ -9,7 +9,7 @@ interface GravityOptions {
 }
 
 export function useGravityEffect(
-  refs: React.RefObject<HTMLElement> | React.RefObject<HTMLElement>[],
+  refs: React.RefObject<Element> | React.RefObject<Element>[],
   options: GravityOptions = {}
 ) {
   useEffect(() => {

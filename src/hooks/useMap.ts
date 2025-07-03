@@ -1,37 +1,45 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useMap<K, V>(
   initialEntries: readonly (readonly [K, V])[] = []
 ) {
-  const [map, setMap] = useState<Map<K, V>>(new Map(initialEntries));
+  const mapRef = useRef(new Map(initialEntries));
+  const [_, forceUpdate] = useState(0);
 
   const set = useCallback((key: K, value: V) => {
-    setMap((prev) => {
-      const newMap = new Map(prev);
+    if (mapRef.current.get(key) !== value) {
+      const newMap = new Map(mapRef.current);
       newMap.set(key, value);
-      return newMap;
-    });
+      mapRef.current = newMap;
+      forceUpdate(n => n + 1);
+    }
   }, []);
 
   const remove = useCallback((key: K) => {
-    setMap((prev) => {
-      const newMap = new Map(prev);
+    if (mapRef.current.has(key)) {
+      const newMap = new Map(mapRef.current);
       newMap.delete(key);
-      return newMap;
-    });
+      mapRef.current = newMap;
+      forceUpdate(n => n + 1);
+    }
   }, []);
 
-  const clear = useCallback(() => setMap(new Map()), []);
+  const clear = useCallback(() => {
+    if (mapRef.current.size > 0) {
+      mapRef.current = new Map();
+      forceUpdate(n => n + 1);
+    }
+  }, []);
 
   return {
-    size: map.size,
-    get: useCallback((key: K) => map.get(key), [map]),
-    has: useCallback((key: K) => map.has(key), [map]),
+    size: mapRef.current.size,
+    get: useCallback((key: K) => mapRef.current.get(key), []),
+    has: useCallback((key: K) => mapRef.current.has(key), []),
     set,
     delete: remove,
     clear,
-    entries: Array.from(map.entries()),
-    keys: Array.from(map.keys()),
-    values: Array.from(map.values()),
+    entries: Array.from(mapRef.current.entries()),
+    keys: Array.from(mapRef.current.keys()),
+    values: Array.from(mapRef.current.values()),
   };
 }

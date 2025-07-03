@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { gsap } from "gsap";
 
 export function useRetroFilter(
-  refs: React.RefObject<HTMLElement> | React.RefObject<HTMLElement>[],
+  refs: React.RefObject<Element> | React.RefObject<Element>[],
   filter: "sepia" | "pixelate" | "scanlines"
 ) {
   useEffect(() => {

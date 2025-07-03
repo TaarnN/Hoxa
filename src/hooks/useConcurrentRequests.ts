@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export function useConcurrentRequests<T>(
   requests: (() => Promise<T>)[],
@@ -14,25 +14,28 @@ export function useConcurrentRequests<T>(
   retry: () => void;
 } {
   const { maxConcurrent = 5, onComplete } = options;
+  const requestsRef = useRef(requests);
+
   const [results, setResults] = useState<(T | null)[]>([]);
   const [errors, setErrors] = useState<(Error | null)[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
   const execute = useCallback(async () => {
+    const reqs = requestsRef.current;
     setLoading(true);
-    setResults(Array(requests.length).fill(null));
-    setErrors(Array(requests.length).fill(null));
+    setResults(Array(reqs.length).fill(null));
+    setErrors(Array(reqs.length).fill(null));
     setProgress(0);
 
-    const queue = [...requests];
+    const queue = [...reqs];
     const results: (T | null)[] = [];
     const errors: (Error | null)[] = [];
     let completed = 0;
 
     const worker = async (): Promise<void> => {
       while (queue.length > 0) {
-        const index = requests.length - queue.length;
+        const index = reqs.length - queue.length;
         const request = queue.shift()!;
         let result: T | null = null;
         let error: Error | null = null;
@@ -43,24 +46,22 @@ export function useConcurrentRequests<T>(
           error = err as Error;
         } finally {
           completed++;
-          if (completed % 5 === 0 || queue.length === 0) {
-            setResults(prev => {
-              const next = [...prev];
-              next[index] = result;
-              return next;
-            });
-            setErrors(prev => {
-              const next = [...prev];
-              next[index] = error;
-              return next;
-            });
-            setProgress(completed / requests.length);
-          }
+          setResults(prev => {
+            const next = [...prev];
+            next[index] = result;
+            return next;
+          });
+          setErrors(prev => {
+            const next = [...prev];
+            next[index] = error;
+            return next;
+          });
+          setProgress(completed / reqs.length);
         }
       }
     };
 
-    const workers = Array(Math.min(maxConcurrent, requests.length))
+    const workers = Array(Math.min(maxConcurrent, reqs.length))
       .fill(null)
       .map(worker);
 
@@ -68,13 +69,14 @@ export function useConcurrentRequests<T>(
 
     setLoading(false);
     onComplete?.(results);
-  }, [requests, maxConcurrent, onComplete]);
+  }, [maxConcurrent, onComplete]);
 
   useEffect(() => {
     if (requests.length > 0) {
+      requestsRef.current = requests;
       execute();
     }
-  }, [execute, requests]);
+  }, [requests.length]);
 
   return {
     results,

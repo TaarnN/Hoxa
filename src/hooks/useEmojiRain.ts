@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
 export function useEmojiRain(
-  containerRef: React.RefObject<HTMLElement>,
+  containerRef: React.RefObject<Element>,
   emojis: string[] = ["🎉", "✨", "💖"],
   count = 20
 ) {

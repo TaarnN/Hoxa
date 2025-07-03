@@ -4,15 +4,14 @@ export function usePreviousDistinct<T>(
   value: T,
   compare: (a: T, b: T) => boolean = (a, b) => a === b
 ): T | undefined {
-  const prevRef = useRef<T | undefined>(undefined);
-  const currentRef = useRef<T>(value);
+  const ref = useRef<{ prev?: T; current: T }>({ current: value });
 
   useEffect(() => {
-    if (!compare(currentRef.current, value)) {
-      prevRef.current = currentRef.current;
-      currentRef.current = value;
+    if (!compare(ref.current.current, value)) {
+      ref.current.prev = ref.current.current;
+      ref.current.current = value;
     }
   }, [value, compare]);
 
-  return prevRef.current;
+  return ref.current.prev;
 }

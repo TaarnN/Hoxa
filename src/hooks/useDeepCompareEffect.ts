@@ -5,14 +5,25 @@ export function useDeepCompareEffect(
   effect: React.EffectCallback,
   dependencies: any[]
 ) {
-  const currentDependenciesRef = useRef<any[]>([]);
+  const previousDepsRef = useRef<any[]>(null);
+  const cleanupRef = useRef<() => void>(null);
 
-  if (
-    !currentDependenciesRef.current ||
-    !isEqual(currentDependenciesRef.current, dependencies)
-  ) {
-    currentDependenciesRef.current = dependencies;
-  }
+  useEffect(() => {
+    const prev = previousDepsRef.current;
+    const changed = prev === undefined || !isEqual(prev, dependencies);
 
-  useEffect(effect, [currentDependenciesRef.current]);
+    if (changed) {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+
+      previousDepsRef.current = dependencies;
+
+      const cleanup = effect();
+      if (typeof cleanup === "function") {
+        cleanupRef.current = cleanup;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...dependencies]);
 }

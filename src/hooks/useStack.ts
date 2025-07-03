@@ -1,31 +1,39 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useStack<T>(initialItems: T[] = []) {
-  const [stack, setStack] = useState<T[]>(initialItems);
+  const stackRef = useRef(initialItems);
+  const [_, forceUpdate] = useState(0);
 
   const push = useCallback((item: T) => {
-    setStack((prev) => [...prev, item]);
+    stackRef.current = [...stackRef.current, item];
+    forceUpdate(n => n + 1);
   }, []);
 
   const pop = useCallback((): T | undefined => {
-    setStack((prev) => {
-      if (prev.length === 0) return prev;
-      return prev.slice(0, -1);
-    });
-    return stack[stack.length - 1];
-  }, [stack]);
+    if (stackRef.current.length === 0) return undefined;
+    const lastItem = stackRef.current[stackRef.current.length - 1];
+    stackRef.current = stackRef.current.slice(0, -1);
+    forceUpdate(n => n + 1);
+    return lastItem;
+  }, []);
 
-  const peek = useCallback(
-    (): T | undefined => stack[stack.length - 1],
-    [stack]
-  );
+  const peek = useCallback((): T | undefined => {
+    return stackRef.current.length > 0 
+      ? stackRef.current[stackRef.current.length - 1] 
+      : undefined;
+  }, []);
 
-  const clear = useCallback(() => setStack([]), []);
+  const clear = useCallback(() => {
+    if (stackRef.current.length > 0) {
+      stackRef.current = [];
+      forceUpdate(n => n + 1);
+    }
+  }, []);
 
   return {
-    items: stack,
-    size: stack.length,
-    isEmpty: stack.length === 0,
+    items: stackRef.current,
+    size: stackRef.current.length,
+    isEmpty: stackRef.current.length === 0,
     push,
     pop,
     peek,

@@ -9,7 +9,7 @@ interface DimOptions {
 }
 
 export function useDimensionShift(
-  refs: React.RefObject<HTMLElement> | React.RefObject<HTMLElement>[],
+  refs: React.RefObject<Element> | React.RefObject<Element>[],
   options: DimOptions = { rotateX: 0, rotateY: 0, perspective: 800 }
 ) {
   useEffect(() => {

@@ -8,7 +8,7 @@ interface HoloOptions {
 }
 
 export function useHologram(
-  refs: React.RefObject<HTMLElement> | React.RefObject<HTMLElement>[],
+  refs: React.RefObject<Element> | React.RefObject<Element>[],
   options: HoloOptions = { rotation: 45, depth: 100 }
 ) {
   useEffect(() => {

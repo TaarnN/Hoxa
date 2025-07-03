@@ -1,32 +1,40 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useSet<T>(initialValues: readonly T[] = []) {
-  const [set, setSet] = useState<Set<T>>(new Set(initialValues));
+  const setRef = useRef(new Set(initialValues));
+  const [_, forceUpdate] = useState(0);
 
   const add = useCallback((value: T) => {
-    setSet((prev) => {
-      const newSet = new Set(prev);
+    if (!setRef.current.has(value)) {
+      const newSet = new Set(setRef.current);
       newSet.add(value);
-      return newSet;
-    });
+      setRef.current = newSet;
+      forceUpdate(n => n + 1);
+    }
   }, []);
 
   const remove = useCallback((value: T) => {
-    setSet((prev) => {
-      const newSet = new Set(prev);
+    if (setRef.current.has(value)) {
+      const newSet = new Set(setRef.current);
       newSet.delete(value);
-      return newSet;
-    });
+      setRef.current = newSet;
+      forceUpdate(n => n + 1);
+    }
   }, []);
 
-  const clear = useCallback(() => setSet(new Set()), []);
+  const clear = useCallback(() => {
+    if (setRef.current.size > 0) {
+      setRef.current = new Set();
+      forceUpdate(n => n + 1);
+    }
+  }, []);
 
   return {
-    size: set.size,
-    has: useCallback((value: T) => set.has(value), [set]),
+    size: setRef.current.size,
+    has: useCallback((value: T) => setRef.current.has(value), []),
     add,
     delete: remove,
     clear,
-    values: Array.from(set.values()),
+    values: Array.from(setRef.current.values()),
   };
 }
