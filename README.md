@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/hoxa"><img src="https://img.shields.io/npm/v/hoxa.svg" alt="npm version" /></a>
-  <a href="https://www.npmjs.com/package/hoxa"><img src="https://img.shields.io/npm/dw/hoxa.svg" alt="npm downloads" /></a>
+  <a href="https://www.npmjs.com/package/hoxa"><img src="https://img.shields.io/npm/dm/hoxa.svg" alt="npm downloads per month" /></a>
   <a href="https://github.com/TaarnN/Hoxa/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" /></a>
 </p>
 
@@ -77,49 +77,54 @@ export function App() {
 ## 🔥 Key Features
 
 ### **State Management**
+
 - `useUndoRedo`: Track and navigate state history
 - `useDebouncedState`: Delay state updates until inactivity
 - `useThrottleState`: Limit state update frequency
 - `useConditionalState`: State that only updates when conditions are met
 - `useQueue`/`useStack`: Collection management with FIFO/LIFO semantics
 
-### **UI & DOM Interactions**  
+### **UI & DOM Interactions**
+
 - `useHover`: Detect element hover state
-- `useFocusTrap`: Contain focus within DOM elements  
+- `useFocusTrap`: Contain focus within DOM elements
 - `useIntersectionObserver`: Track element visibility
 - `useElementSize`: Monitor element dimensions
 - `useDrag`/`useDrop`: Drag-and-drop utilities
 
-### **Async & Networking**  
-- `useAsyncRetry`: Auto-retry failed async operations  
-- `usePromiseQueue`: Manage concurrent promise execution  
-- `useFetchWithCache`: Network requests with caching  
+### **Async & Networking**
+
+- `useAsyncRetry`: Auto-retry failed async operations
+- `usePromiseQueue`: Manage concurrent promise execution
+- `useFetchWithCache`: Network requests with caching
 - `useWebSocket`: Real-time WebSocket management
 - `useConcurrentRequests`: Parallel request handling
 
-### **Performance Optimization**  
-- `useDeepCompareEffect`: Skip unnecessary effect runs  
-- `useThrottleEvent`: Rate-limit event handlers  
-- `useRenderCount`: Track component re-renders  
-- `useMemoCompare`: Memoize with custom comparison  
+### **Performance Optimization**
+
+- `useDeepCompareEffect`: Skip unnecessary effect runs
+- `useThrottleEvent`: Rate-limit event handlers
+- `useRenderCount`: Track component re-renders
+- `useMemoCompare`: Memoize with custom comparison
 - `useIsFirstRender`: Detect initial mount
 
-### **Forms & Validation**  
-- `useForm`: Complete form state management  
-- `useInputValidation`: Real-time field validation  
-- `useMultiStepForm`: Wizard-style form flows  
-- `useField`: Isolated form field control  
+### **Forms & Validation**
+
+- `useForm`: Complete form state management
+- `useInputValidation`: Real-time field validation
+- `useMultiStepForm`: Wizard-style form flows
+- `useField`: Isolated form field control
 - `useFormReset`: Form state reset utilities
 
-### **Animations & Effects**  
-- `useGravityEffect`: Physics-based animations  
-- `useEmojiRain`: Falling emoji effects  
-- `useRetroFilter`: Vintage visual effects  
-- `useConfettiSurprise`: Celebration animations  
+### **Animations & Effects**
+
+- `useGravityEffect`: Physics-based animations
+- `useEmojiRain`: Falling emoji effects
+- `useRetroFilter`: Vintage visual effects
+- `useConfettiSurprise`: Celebration animations
 - `useMoodLighting`: Dynamic color themes
 
 ...and more specialized hooks for every use case!
-
 
 ---
 
